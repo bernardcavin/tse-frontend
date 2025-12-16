@@ -1,21 +1,19 @@
-import { useCallback, useMemo } from 'react';
-import { DataTableColumn } from 'mantine-datatable';
-import { QRCodeCanvas } from 'qrcode.react';
-import z from 'zod';
-import { Avatar, Group, Loader, Text, Title } from '@mantine/core';
-import { modals } from '@mantine/modals';
 import { Inventory } from '@/api/entities/inventory';
 import { usePagination } from '@/api/helpers';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
 import { MultipleImageAttachment } from '@/components/image-attachment';
-import { ActiveBadge } from '@/components/resources/active-badge';
 import { LocationBadge } from '@/components/resources/storage-badge';
-import { app } from '@/config';
-import { useDeleteInventory, useGetInventory, useGetInventoryList } from '@/hooks/api/inventory';
+import { useAuth } from '@/hooks';
+import { useDeleteInventory, useGetInventoryList } from '@/hooks/api/inventory';
 import { formatDateReadable } from '@/utilities/date';
 import { icons } from '@/utilities/icons';
-import { formatCurrency } from '@/utilities/number';
+import { Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { DataTableColumn } from 'mantine-datatable';
+import { QRCodeCanvas } from 'qrcode.react';
+import { useCallback, useMemo } from 'react';
+import z from 'zod';
 import { openInventoryCreate, openInventoryEdit, openInventoryView } from './inventory-modals';
 
 type InventoryType = z.infer<typeof Inventory>;
@@ -26,6 +24,9 @@ type SortableFields = Pick<
 >;
 
 export function InventoryTable() {
+  const { user } = useAuth();
+  const isManager = user?.role === 'MANAGER';
+
   const { page, limit, setLimit, setPage } = usePagination();
   const { filters, sort } = DataTable.useDataTable<SortableFields>({
     sortConfig: {
@@ -159,12 +160,12 @@ export function InventoryTable() {
           <DataTable.Actions
             onEdit={() => openInventoryEdit(row.id, refetch)}
             onView={() => openInventoryView(row.id)}
-            onDelete={() => handleDelete(row.id)}
+            onDelete={isManager ? () => handleDelete(row.id) : undefined}
           />
         ),
       },
     ],
-    []
+    [isManager, handleDelete]
   );
 
   const Icon = icons.inventory;

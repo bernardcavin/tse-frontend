@@ -1,13 +1,18 @@
-import { useMemo } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { MENUS } from '@/layouts/dashboard/sidebar/menu';
+import { getMenusForRole } from '@/layouts/dashboard/sidebar/menu';
+import { useMemo } from 'react';
 
 interface Props {
   appTitle: string;
 }
 
 export default function useCurrentSubNav({ appTitle }: Props) {
-  const currentNav = useMemo(() => MENUS.find((link) => link.title === appTitle), [appTitle]);
+  const { user } = useAuth();
+
+  const currentNav = useMemo(() => {
+    const menus = getMenusForRole(user?.role ?? '');
+    return menus.find((link) => link.title === appTitle);
+  }, [appTitle, user?.role]);
 
   return currentNav;
 }

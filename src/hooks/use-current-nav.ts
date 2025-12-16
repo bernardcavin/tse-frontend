@@ -1,18 +1,18 @@
+import { useAuth } from '@/hooks/use-auth';
+import { getMenusForRole } from '@/layouts/dashboard/sidebar/menu';
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/use-auth';
-import { MENUS } from '@/layouts/dashboard/sidebar/menu';
 
 export default function useCurrentNav() {
   const { pathname } = useLocation();
+  const { user } = useAuth();
 
-  const currentNav = useMemo(
-    () =>
-      MENUS.find((link) => {
-        return pathname.includes(link.href);
-      }),
-    [pathname]
-  );
+  const currentNav = useMemo(() => {
+    const menus = getMenusForRole(user?.role ?? '');
+    return menus.find((link) => {
+      return pathname.includes(link.href);
+    });
+  }, [pathname, user?.role]);
 
   return currentNav;
 }

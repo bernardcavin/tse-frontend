@@ -9,13 +9,17 @@ export const paths = {
     terms: '/auth/terms',
     privacy: '/auth/privacy',
   },
-  home: {
-    root: '/home',
+  manager: {
+    root: '/manager',
+    home: '/manager/home',
+    inventory: '/manager/inventory',
+    facilities: '/manager/facilities',
+    employees: '/manager/employees',
   },
-  inventory: {
-    root: '/inventory',
-  },
-  facilities: {
-    root: '/facilities',
+  employee: {
+    root: '/employee',
+    home: '/employee/home',
+    inventory: '/employee/inventory',
+    facilities: '/employee/facilities',
   },
 };

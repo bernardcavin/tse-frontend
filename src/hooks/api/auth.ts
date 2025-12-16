@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { notifications } from '@mantine/notifications';
 import { removeClientAccessToken, setClientAccessToken } from '@/api/axios';
 import { LoginRequestSchema, LoginResponseSchema } from '@/api/dtos';
 import { createPostMutationHook } from '@/api/helpers';
+import { notifications } from '@mantine/notifications';
+import { z } from 'zod';
 
 export const useLogin = createPostMutationHook({
   endpoint: 'auth/login', // Updated endpoint
@@ -10,7 +10,9 @@ export const useLogin = createPostMutationHook({
   responseSchema: LoginResponseSchema, // Response schema for response validation
   rMutationParams: {
     onSuccess: (data) => {
+      
       setClientAccessToken(data.access_token); // Set the access token
+      console.log('Successfuly logged in')
       notifications.show({ title: 'Welcome back!', message: 'You have successfully logged in' });
     },
     onError: (error) => {

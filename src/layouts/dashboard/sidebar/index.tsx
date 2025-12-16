@@ -1,15 +1,12 @@
-import { useEffect, useState } from 'react';
-import { Setting3 } from 'iconsax-react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Box, Flex, Indicator, SimpleGrid, Text, Tooltip, useMantineTheme } from '@mantine/core';
-import { useHover, useMediaQuery } from '@mantine/hooks';
-import { Logo } from '@/components/logo';
 import { useAuth } from '@/hooks';
 import useCurrentNav from '@/hooks/use-current-nav';
-import { MENUS } from '@/layouts/dashboard/sidebar/menu';
+import { getMenusForRole } from '@/layouts/dashboard/sidebar/menu';
 import SubNavBar from '@/layouts/dashboard/sidebar/sub-navbar';
 import { useNavbar } from '@/providers/navbar-provider';
-import { paths } from '@/routes';
+import { Box, Flex, SimpleGrid, Tooltip, useMantineTheme } from '@mantine/core';
+import { useHover, useMediaQuery } from '@mantine/hooks';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import classes from './navbar.module.css';
 
 export default function Navbar() {
@@ -26,6 +23,14 @@ export default function Navbar() {
 
   const { hovered, ref } = useHover();
 
+  // Filter menus based on user role - will re-compute when user.role changes
+  const visibleMenus = useMemo(() => {
+    console.log('[Sidebar] Computing visible menus for role:', user?.role);
+    const menus = getMenusForRole(user?.role ?? '');
+    console.log('[Sidebar] Visible menus count:', menus.length, menus.map(m => m.label));
+    return menus;
+  }, [user?.role]);
+
   useEffect(() => {
     if (currentNav) {
       setCurrentAppTitle(currentNav.title);
@@ -36,7 +41,7 @@ export default function Navbar() {
     smallScreen && closeNavbar();
   }, [smallScreen, closeNavbar]);
 
-  const currentHoveredNav = MENUS.find((link) => link.title === currentAppTitle);
+  const currentHoveredNav = visibleMenus.find((link) => link.title === currentAppTitle);
 
   useEffect(() => {
     if (isNavbarLocked) {
@@ -74,7 +79,7 @@ export default function Navbar() {
           {/* Top links */}
           <Flex w="100%" direction="column" align="center" gap={10}>
             <SimpleGrid pb={10} className={classes.mini_link_item_container} cols={1} w="100%">
-              {MENUS.map(({ icon: Icon, href, title, subs }) => {
+              {visibleMenus.map(({ icon: Icon, href, title, subs }) => {
                 const isHovered = hoveredLink === title;
                 const isActive = currentNav?.href.includes(href);
 

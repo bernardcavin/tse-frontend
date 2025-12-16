@@ -1,11 +1,12 @@
-import { Burger, Flex, Group } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
 import { ColorSchemeToggler } from '@/components/color-scheme-toggler';
 import { SpotlightSearchBarButton } from '@/components/spotlight-search-bar-button';
+import { useAuth } from '@/hooks';
 import { CurrentUser } from '@/layouts/dashboard/header/current-user';
 import { SearchMenu } from '@/layouts/dashboard/header/search-menu';
-import { MENUS } from '@/layouts/dashboard/sidebar/menu';
+import { getMenusForRole } from '@/layouts/dashboard/sidebar/menu';
 import { useNavbar } from '@/providers/navbar-provider';
+import { Burger, Flex, Group } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 
 interface Props {
   opened: boolean;
@@ -14,8 +15,10 @@ interface Props {
 
 export default function AppHeader({ opened, toggle }: Props) {
   const { isNavbarCollapse, toggleNavbar, lockNavbar, unlockNavbar } = useNavbar();
+  const { user } = useAuth();
 
   const smallScreen = useMediaQuery('(max-width: 48em)');
+  const menus = getMenusForRole(user?.role ?? '');
 
   const handleClick = () => {
     if (isNavbarCollapse) {
@@ -43,7 +46,7 @@ export default function AppHeader({ opened, toggle }: Props) {
         )}
         <SpotlightSearchBarButton
           placeholder="Search for feature"
-          spotlight={<SearchMenu menus={MENUS} />}
+          spotlight={<SearchMenu menus={menus} />}
         />
 
         {/* <Logo withLabel variant="filled" /> */}

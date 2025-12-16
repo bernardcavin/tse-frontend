@@ -29,3 +29,27 @@ export function renameObjectKeys<T extends Record<string, any>>(
     {} as Record<string, any>
   );
 }
+
+function isPlainObject(value: any): value is Record<string, any> {
+  return (
+    typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Date)
+  );
+}
+
+export function emptyStringToNull<T>(input: T): T {
+  if (isPlainObject(input)) {
+    const out: any = {};
+    for (const key in input) {
+      const value = (input as any)[key];
+      if (value === '') {
+        out[key] = null;
+      } else {
+        out[key] = emptyStringToNull(value);
+      }
+    }
+    return out;
+  }
+
+  // Arrays, dates, and primitives remain untouched
+  return input;
+}

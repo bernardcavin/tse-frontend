@@ -1,21 +1,33 @@
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { AuthGuard } from '@/guards/auth-guard';
-import { GuestGuard } from '@/guards/guest-guard';
+import { UserGuard } from '@/guards/user-guard';
 import { AuthLayout } from '@/layouts/auth';
-import { DashboardLayout } from '@/layouts/dashboard';
+import { KeyedDashboardLayout } from '@/layouts/keyed-dashboard-layout';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { LazyPage } from './lazy-page';
 import { paths } from './paths';
 
 const router = createBrowserRouter([
+  /* -------------------------------------------------------------------------- */
+  /*                                  ROOT                                     */
+  /* -------------------------------------------------------------------------- */
+  {
+    path: '/',
+    element: (
+      <UserGuard>
+        <Navigate to={paths.manager.root} replace />
+      </UserGuard>
+    ),
+  },
+
   /* -------------------------------------------------------------------------- */
   /*                                     AUTH                                   */
   /* -------------------------------------------------------------------------- */
   {
     path: paths.auth.root,
     element: (
-      <GuestGuard>
+      <UserGuard>
         <AuthLayout />
-      </GuestGuard>
+      </UserGuard>
     ),
     children: [
       {
@@ -30,49 +42,85 @@ const router = createBrowserRouter([
     ],
   },
 
+  /* -------------------------------------------------------------------------- */
+  /*                                   MANAGER                                  */
+  /* -------------------------------------------------------------------------- */
   {
-    path: '/',
-    element: <Navigate to={paths.home.root} replace />,
-  },
-
-  {
-    path: paths.home.root,
+    path: paths.manager.root,
     element: (
-      <AuthGuard>
-        <DashboardLayout />
-      </AuthGuard>
+      <UserGuard>
+        <AuthGuard>
+          <KeyedDashboardLayout />
+        </AuthGuard>
+      </UserGuard>
     ),
     children: [
+      /* ------------------------------- REDIRECT ------------------------------- */
       {
-        path: paths.home.root,
+        index: true,
+        element: <Navigate to={paths.manager.home} replace />,
+      },
+
+      /* ------------------------------- HOME ------------------------------- */
+      {
+        path: paths.manager.home,
         element: LazyPage(() => import('@/pages/home')),
       },
-    ],
-  },
-  {
-    path: paths.inventory.root,
-    element: (
-      <AuthGuard>
-        <DashboardLayout />
-      </AuthGuard>
-    ),
-    children: [
+
+      /* ------------------------------- INVENTORY ------------------------------- */
       {
-        path: paths.inventory.root,
+        path: paths.manager.inventory,
         element: LazyPage(() => import('@/pages/inventory')),
+      },
+
+      /* ------------------------------- FACILITIES ------------------------------- */
+      {
+        path: paths.manager.facilities,
+        element: LazyPage(() => import('@/pages/facilities')),
+      },
+
+      /* ------------------------------- EMPLOYEES ------------------------------- */
+      {
+        path: paths.manager.employees,
+        element: LazyPage(() => import('@/pages/employees')),
       },
     ],
   },
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   EMPLOYEE                                 */
+  /* -------------------------------------------------------------------------- */
   {
-    path: paths.facilities.root,
+    path: paths.employee.root,
     element: (
-      <AuthGuard>
-        <DashboardLayout />
-      </AuthGuard>
+      <UserGuard>
+        <AuthGuard>
+          <KeyedDashboardLayout />
+        </AuthGuard>
+      </UserGuard>
     ),
     children: [
+      /* ------------------------------- REDIRECT ------------------------------- */
       {
-        path: paths.facilities.root,
+        index: true,
+        element: <Navigate to={paths.employee.home} replace />,
+      },
+
+      /* ------------------------------- HOME ------------------------------- */
+      {
+        path: paths.employee.home,
+        element: LazyPage(() => import('@/pages/home')),
+      },
+
+      /* ------------------------------- INVENTORY ------------------------------- */
+      {
+        path: paths.employee.inventory,
+        element: LazyPage(() => import('@/pages/inventory')),
+      },
+
+      /* ------------------------------- FACILITIES ------------------------------- */
+      {
+        path: paths.employee.facilities,
         element: LazyPage(() => import('@/pages/facilities')),
       },
     ],

@@ -1,43 +1,15 @@
-import { Box1, Building, Drop, Flashy, Map1, Note, Setting, Setting2 } from 'iconsax-react';
 import {
-  BsBellFill,
-  BsBox,
-  BsBoxFill,
-  BsBuilding,
-  BsBuildingFillGear,
-  BsEnvelopeFill,
-  BsGearFill,
-  BsPersonFill,
-  BsRulers,
-  BsTable,
-  BsTools,
+    BsBoxFill,
+    BsBuildingFillGear,
+    BsPeopleFill,
+    BsTools
 } from 'react-icons/bs';
-import {
-  GiAngola,
-  GiAnticlockwiseRotation,
-  GiBoxTrap,
-  GiBriefcase,
-  GiCalendar,
-  GiCompass,
-  GiDatabase,
-  GiHand,
-  GiHouse,
-  GiMongolia,
-  GiNotebook,
-  GiOffshorePlatform,
-  GiOilPump,
-  GiOilRig,
-  GiPerson,
-  GiPlainSquare,
-  GiPostOffice,
-  GiStack,
-  GiToolbox,
-} from 'react-icons/gi';
 
 export const icons = {
   inventory: BsTools,
   facilities: BsBuildingFillGear,
   dashboard: BsBoxFill,
+  users: BsPeopleFill,
 };
 
 export function DataIcon({ label }: { label: keyof typeof icons }) {
