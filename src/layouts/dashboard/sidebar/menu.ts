@@ -40,6 +40,12 @@ export const MANAGER_MENUS: SideLink[] = [
     href: paths.manager.employees,
     icon: icons.users,
   },
+  {
+    title: 'Attendance',
+    label: 'Attendance',
+    href: paths.manager.attendance,
+    icon: icons.clock,
+  },
 ];
 
 // Employee menus
@@ -61,6 +67,12 @@ export const EMPLOYEE_MENUS: SideLink[] = [
     label: 'Facilities',
     href: paths.employee.facilities,
     icon: icons.facilities,
+  },
+  {
+    title: 'Attendance',
+    label: 'Attendance',
+    href: paths.employee.attendance,
+    icon: icons.clock,
   },
 ];
 

@@ -15,11 +15,13 @@ export const paths = {
     inventory: '/manager/inventory',
     facilities: '/manager/facilities',
     employees: '/manager/employees',
+    attendance: '/manager/attendance',
   },
   employee: {
     root: '/employee',
     home: '/employee/home',
     inventory: '/employee/inventory',
     facilities: '/employee/facilities',
+    attendance: '/employee/attendance',
   },
 };

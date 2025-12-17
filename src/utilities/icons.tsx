@@ -1,6 +1,8 @@
 import {
     BsBoxFill,
+    BsBuilding,
     BsBuildingFillGear,
+    BsClock,
     BsPeopleFill,
     BsTools
 } from 'react-icons/bs';
@@ -10,6 +12,8 @@ export const icons = {
   facilities: BsBuildingFillGear,
   dashboard: BsBoxFill,
   users: BsPeopleFill,
+  clock: BsClock,
+  building: BsBuilding,
 };
 
 export function DataIcon({ label }: { label: keyof typeof icons }) {

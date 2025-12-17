@@ -84,6 +84,12 @@ const router = createBrowserRouter([
         path: paths.manager.employees,
         element: LazyPage(() => import('@/pages/employees')),
       },
+
+      /* ------------------------------- ATTENDANCE ------------------------------- */
+      {
+        path: paths.manager.attendance,
+        element: LazyPage(() => import('@/pages/attendance/manager')),
+      },
     ],
   },
 
@@ -122,6 +128,12 @@ const router = createBrowserRouter([
       {
         path: paths.employee.facilities,
         element: LazyPage(() => import('@/pages/facilities')),
+      },
+
+      /* ------------------------------- ATTENDANCE ------------------------------- */
+      {
+        path: paths.employee.attendance,
+        element: LazyPage(() => import('@/pages/attendance/employee')),
       },
     ],
   },
