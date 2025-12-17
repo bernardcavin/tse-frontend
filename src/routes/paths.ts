@@ -15,7 +15,9 @@ export const paths = {
     inventory: '/manager/inventory',
     facilities: '/manager/facilities',
     employees: '/manager/employees',
+    employeeDetail: (id: string) => `/manager/employees/${id}`,
     attendance: '/manager/attendance',
+    hazardObservations: '/manager/hazard-observations',
   },
   employee: {
     root: '/employee',
@@ -23,5 +25,6 @@ export const paths = {
     inventory: '/employee/inventory',
     facilities: '/employee/facilities',
     attendance: '/employee/attendance',
+    hazardObservations: '/employee/hazard-observations',
   },
 };

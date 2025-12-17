@@ -4,11 +4,13 @@ import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
 import { useAuth } from '@/hooks';
 import { useDeleteEmployee, useGetEmployees } from '@/hooks/api/employees';
+import { paths } from '@/routes';
 import { icons } from '@/utilities/icons';
 import { Badge, Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { DataTableColumn } from 'mantine-datatable';
 import { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import z from 'zod';
 import { openEmployeeCreate, openEmployeeEdit } from './employee-modals';
 
@@ -18,6 +20,7 @@ type SortableFields = Pick<EmployeeType, 'name' | 'username'>;
 
 export function EmployeeTable() {
   const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
   const { page, limit, setLimit, setPage } = usePagination();
   const { filters, sort } = DataTable.useDataTable<SortableFields>({
     sortConfig: {
@@ -92,7 +95,7 @@ export function EmployeeTable() {
         title: 'Role',
         sortable: true,
         render: ({ role }) => (
-          <Badge color={role === 'MANAGER' ? 'blue' : 'gray'} variant="light">
+          <Badge color={role === 'MANAGER' ? 'blue' : 'gray'} >
             {role}
           </Badge>
         ),
@@ -109,6 +112,7 @@ export function EmployeeTable() {
         width: 130,
         render: (row: any) => (
           <DataTable.Actions
+            onView={() => navigate(paths.manager.employeeDetail(row.id))}
             onEdit={() => openEmployeeEdit(row.id, refetch)}
             onDelete={
               row.id !== currentUser?.id ? () => handleDelete(row.id) : undefined // Prevent deleting yourself
@@ -117,7 +121,7 @@ export function EmployeeTable() {
         ),
       },
     ],
-    [currentUser?.id, handleDelete]
+    [currentUser?.id, handleDelete, navigate]
   );
 
   const Icon = icons.users;

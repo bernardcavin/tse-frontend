@@ -10,7 +10,7 @@ export default function useCurrentSubNav({ appTitle }: Props) {
   const { user } = useAuth();
 
   const currentNav = useMemo(() => {
-    const menus = getMenusForRole(user?.role ?? '');
+    const menus = getMenusForRole(user?.role ?? '', user?.department);
     return menus.find((link) => link.title === appTitle);
   }, [appTitle, user?.role]);
 

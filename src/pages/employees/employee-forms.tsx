@@ -1,11 +1,28 @@
 import { CreateEmployee, UpdateEmployee } from '@/api/entities/auth';
+import { FormSection } from '@/components/form-section';
 import { useCreateEmployee, useGetEmployees, useUpdateEmployee } from '@/hooks/api/employees';
 import { emptyStringToNull } from '@/utilities/object';
-import { Button, Group, PasswordInput, Select, Stack, Textarea, TextInput } from '@mantine/core';
+import { Button, Grid, Group, PasswordInput, Select, Stack, Textarea, TextInput } from '@mantine/core';
+import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { zodResolver } from 'mantine-form-zod-resolver';
 import { useEffect } from 'react';
+import z from 'zod';
+
+const DEPARTMENT_OPTIONS = [
+  { value: 'HSE', label: 'HSE' },
+  { value: 'Finance', label: 'Finance' },
+  { value: 'Operation', label: 'Operation' },
+  { value: 'IT', label: 'IT' },
+  { value: 'Engineering', label: 'Engineering' },
+  { value: 'Procurement', label: 'Procurement' },
+  { value: 'HR', label: 'HR' },
+  { value: 'Maintenance', label: 'Maintenance' },
+  { value: 'QA/QC', label: 'QA/QC' },
+  { value: 'Safety', label: 'Safety' },
+  { value: 'Other', label: 'Other' },
+];
 
 interface EmployeeFormProps {
   employeeId?: string;
@@ -21,23 +38,7 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
   const { mutate: createEmployee, isPending: isCreating } = useCreateEmployee();
   const { mutate: updateEmployee, isPending: isUpdating } = useUpdateEmployee();
 
-  const form = useForm({
-    initialValues: {
-      name: '',
-      username: '',
-      employee_num: '',
-      email: '',
-      nik: '',
-      position: '',
-      department: '',
-      phone_number: '',
-      hire_date: '',
-      address: '',
-      emergency_contact_name: '',
-      emergency_contact_phone: '',
-      password: '',
-      role: 'EMPLOYEE' as 'EMPLOYEE' | 'MANAGER',
-    },
+  const form = useForm<z.infer<typeof CreateEmployee>>({
     validate: zodResolver(isEditing ? UpdateEmployee : CreateEmployee),
   });
 
@@ -46,47 +47,28 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
       form.setValues({
         name: employee.name,
         username: employee.username,
-        employee_num: employee.employee_num || '',
-        email: employee.email || '',
-        nik: employee.nik || '',
-        position: employee.position || '',
-        department: employee.department || '',
-        phone_number: employee.phone_number || '',
-        hire_date: employee.hire_date ? employee.hire_date.split('T')[0] : '',
-        address: employee.address || '',
-        emergency_contact_name: employee.emergency_contact_name || '',
-        emergency_contact_phone: employee.emergency_contact_phone || '',
+        employee_num: employee.employee_num,
+        email: employee.email,
+        nik: employee.nik,
+        position: employee.position,
+        department: employee.department,
+        phone_number: employee.phone_number,
+        hire_date: employee.hire_date ? new Date(employee.hire_date) : null,
+        address: employee.address,
+        emergency_contact_name: employee.emergency_contact_name,
+        emergency_contact_phone: employee.emergency_contact_phone,
         password: '', // Don't pre-fill password for security
         role: employee.role as 'EMPLOYEE' | 'MANAGER',
       });
     }
   }, [employee, isEditing]);
 
-  const handleSubmit = (values: typeof form.values) => {
+  const handleSubmit = form.onSubmit((values: any) => {
+
     if (isEditing && employeeId) {
-      // When editing, send all non-password fields (allows clearing fields with empty strings)
-      const updateData: any = {
-        name: values.name,
-        username: values.username,
-        employee_num: values.employee_num,
-        email: values.email,
-        nik: values.nik,
-        position: values.position,
-        department: values.department,
-        phone_number: values.phone_number,
-        hire_date: values.hire_date,
-        address: values.address,
-        emergency_contact_name: values.emergency_contact_name,
-        emergency_contact_phone: values.emergency_contact_phone,
-        role: values.role,
-      };
-      // Only include password if it's been changed
-      if (values.password) {
-        updateData.password = values.password;
-      }
 
       updateEmployee(
-        { id: employeeId, data: emptyStringToNull(updateData) },
+        { id: employeeId, data: emptyStringToNull(values) },
         {
           onSuccess: () => {
             modals.close('employee-edit');
@@ -102,107 +84,185 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
         },
       });
     }
-  };
+  });
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
+    <form onSubmit={handleSubmit}>
       <Stack gap="md">
-        <TextInput
-          label="Name"
-          placeholder="Enter employee name"
-          required={!isEditing}
-          {...form.getInputProps('name')}
-        />
+        {/* Basic Information */}
+        <FormSection title="Basic Information">
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Full Name"
+                placeholder="e.g. John Doe"
+                description="Employee's full name"
+                required={!isEditing}
+                {...form.getInputProps('name')}
+              />
+            </Grid.Col>
 
-        <TextInput
-          label="Username"
-          placeholder="Enter username"
-          required={!isEditing}
-          {...form.getInputProps('username')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Username"
+                placeholder="e.g. johndoe"
+                description="Used for login"
+                required={!isEditing}
+                {...form.getInputProps('username')}
+              />
+            </Grid.Col>
 
-        <TextInput
-          label="Employee Number"
-          placeholder="Enter employee number"
-          {...form.getInputProps('employee_num')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Employee Number"
+                placeholder="e.g. EMP-001"
+                description="Unique employee identifier"
+                {...form.getInputProps('employee_num')}
+              />
+            </Grid.Col>
 
-        <TextInput
-          label="Email"
-          placeholder="Enter email address"
-          type="email"
-          {...form.getInputProps('email')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="NIK (National ID)"
+                placeholder="e.g. 1234567890123456"
+                description="Indonesian National ID number"
+                {...form.getInputProps('nik')}
+              />
+            </Grid.Col>
+          </Grid>
+        </FormSection>
 
-        <TextInput
-          label="NIK (National ID)"
-          placeholder="Enter NIK"
-          {...form.getInputProps('nik')}
-        />
+        {/* Contact Information */}
+        <FormSection title="Contact Information">
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Email Address"
+                placeholder="e.g. john.doe@company.com"
+                type="email"
+                description="Work email address"
+                {...form.getInputProps('email')}
+              />
+            </Grid.Col>
 
-        <TextInput
-          label="Position"
-          placeholder="Enter job position/title"
-          {...form.getInputProps('position')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Phone Number"
+                placeholder="e.g. +62 812-3456-7890"
+                type="tel"
+                description="Mobile or work phone"
+                {...form.getInputProps('phone_number')}
+              />
+            </Grid.Col>
 
-        <TextInput
-          label="Department"
-          placeholder="Enter department"
-          {...form.getInputProps('department')}
-        />
+            <Grid.Col span={12}>
+              <Textarea
+                label="Address"
+                placeholder="Enter full address"
+                description="Residential address"
+                minRows={2}
+                {...form.getInputProps('address')}
+              />
+            </Grid.Col>
+          </Grid>
+        </FormSection>
 
-        <TextInput
-          label="Phone Number"
-          placeholder="Enter phone number"
-          type="tel"
-          {...form.getInputProps('phone_number')}
-        />
+        {/* Employment Information */}
+        <FormSection title="Employment Information">
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Position / Job Title"
+                placeholder="e.g. Senior Engineer, Manager"
+                description="Current job position"
+                {...form.getInputProps('position')}
+              />
+            </Grid.Col>
 
-        <TextInput
-          label="Hire Date"
-          placeholder="Select hire date"
-          type="date"
-          {...form.getInputProps('hire_date')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Select
+                label="Department"
+                placeholder="Select department"
+                description="Employee's department"
+                data={DEPARTMENT_OPTIONS}
+                searchable
+                clearable
+                {...form.getInputProps('department')}
+                comboboxProps={{ zIndex: 2001 }}
+              />
+            </Grid.Col>
 
-        <Textarea
-          label="Address"
-          placeholder="Enter address"
-          minRows={2}
-          {...form.getInputProps('address')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <DatePickerInput
+                label="Hire Date"
+                placeholder="Select hire date"
+                description="Date employee was hired"
+                valueFormat="DD/MM/YYYY"
+                clearable
+                {...form.getInputProps('hire_date')}
+                popoverProps={{ zIndex: 2001 }}
+              />
+            </Grid.Col>
 
-        <TextInput
-          label="Emergency Contact Name"
-          placeholder="Enter emergency contact name"
-          {...form.getInputProps('emergency_contact_name')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Select
+                label="Role"
+                placeholder="Select role"
+                description="System access level"
+                required
+                data={[
+                  { value: 'EMPLOYEE', label: 'Employee' },
+                  { value: 'MANAGER', label: 'Manager' },
+                ]}
+                {...form.getInputProps('role')}
+                comboboxProps={{ zIndex: 2001 }}
+              />
+            </Grid.Col>
+          </Grid>
+        </FormSection>
 
-        <TextInput
-          label="Emergency Contact Phone"
-          placeholder="Enter emergency contact phone"
-          type="tel"
-          {...form.getInputProps('emergency_contact_phone')}
-        />
+        {/* Emergency Contact */}
+        <FormSection title="Emergency Contact">
+          <Grid>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Emergency Contact Name"
+                placeholder="e.g. Jane Doe (Spouse)"
+                description="Name of person to contact in emergency"
+                {...form.getInputProps('emergency_contact_name')}
+              />
+            </Grid.Col>
 
-        <PasswordInput
-          label="Password"
-          placeholder={isEditing ? 'Leave blank to keep current password' : 'Enter password'}
-          required={!isEditing}
-          {...form.getInputProps('password')}
-        />
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label="Emergency Contact Phone"
+                placeholder="e.g. +62 812-9876-5432"
+                type="tel"
+                description="Emergency contact's phone number"
+                {...form.getInputProps('emergency_contact_phone')}
+              />
+            </Grid.Col>
+          </Grid>
+        </FormSection>
 
-        <Select
-          label="Role"
-          placeholder="Select role"
-          required
-          data={[
-            { value: 'EMPLOYEE', label: 'Employee' },
-            { value: 'MANAGER', label: 'Manager' },
-          ]}
-          {...form.getInputProps('role')}
-        />
+        {/* Credentials */}
+        <FormSection title="Credentials">
+          <Grid>
+            <Grid.Col span={12}>
+              <PasswordInput
+                label="Password"
+                placeholder={isEditing ? 'Leave blank to keep current password' : 'Enter password'}
+                description={
+                  isEditing
+                    ? 'Only enter if you want to change the password'
+                    : 'Password for login access'
+                }
+                required={!isEditing}
+                {...form.getInputProps('password')}
+              />
+            </Grid.Col>
+          </Grid>
+        </FormSection>
 
         <Group justify="flex-end" mt="md">
           <Button

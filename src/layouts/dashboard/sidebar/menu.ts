@@ -46,6 +46,12 @@ export const MANAGER_MENUS: SideLink[] = [
     href: paths.manager.attendance,
     icon: icons.clock,
   },
+  {
+    title: 'Hazard Observations',
+    label: 'Hazard Observations',
+    href: paths.manager.hazardObservations,
+    icon: icons.alert,
+  },
 ];
 
 // Employee menus
@@ -74,15 +80,22 @@ export const EMPLOYEE_MENUS: SideLink[] = [
     href: paths.employee.attendance,
     icon: icons.clock,
   },
+  {
+    title: 'Hazard Observations',
+    label: 'Hazard Observations',
+    href: paths.employee.hazardObservations,
+    icon: icons.alert,
+  },
 ];
 
 /**
- * Get menus based on user role
+ * Get menus based on user role and department
  */
-export function getMenusForRole(userRole: string): SideLink[] {
+export function getMenusForRole(userRole: string, userDepartment?: string | null): SideLink[] {
   if (userRole === 'MANAGER') {
     return MANAGER_MENUS;
   } else if (userRole === 'EMPLOYEE') {
+    // All employees can see and report Hazard Observations
     return EMPLOYEE_MENUS;
   }
   return [];

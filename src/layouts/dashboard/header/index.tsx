@@ -18,7 +18,7 @@ export default function AppHeader({ opened, toggle }: Props) {
   const { user } = useAuth();
 
   const smallScreen = useMediaQuery('(max-width: 48em)');
-  const menus = getMenusForRole(user?.role ?? '');
+  const menus = getMenusForRole(user?.role ?? '', user?.department);
 
   const handleClick = () => {
     if (isNavbarCollapse) {

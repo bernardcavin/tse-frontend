@@ -84,11 +84,21 @@ const router = createBrowserRouter([
         path: paths.manager.employees,
         element: LazyPage(() => import('@/pages/employees')),
       },
+      {
+        path: paths.manager.employeeDetail(':id'),
+        element: LazyPage(() => import('@/pages/employees/[id]')),
+      },
 
       /* ------------------------------- ATTENDANCE ------------------------------- */
       {
         path: paths.manager.attendance,
         element: LazyPage(() => import('@/pages/attendance/manager')),
+      },
+
+      /* ------------------------------- HAZARD OBSERVATIONS ------------------------------- */
+      {
+        path: paths.manager.hazardObservations,
+        element: LazyPage(() => import('@/pages/hazard-observations')),
       },
     ],
   },
@@ -134,6 +144,12 @@ const router = createBrowserRouter([
       {
         path: paths.employee.attendance,
         element: LazyPage(() => import('@/pages/attendance/employee')),
+      },
+
+      /* ------------------------------- HAZARD OBSERVATIONS ------------------------------- */
+      {
+        path: paths.employee.hazardObservations,
+        element: LazyPage(() => import('@/pages/hazard-observations')),
       },
     ],
   },

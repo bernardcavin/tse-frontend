@@ -1,11 +1,12 @@
+import { ActionIcon, Group, GroupProps, Tooltip } from '@mantine/core';
 import {
   PiTrashDuotone as DeleteIcon,
   PiPencilDuotone as EditIcon,
+  PiCheck,
   PiGearDuotone,
   PiClockCounterClockwiseDuotone as RestoreIcon,
-  PiEyeDuotone as ShowIcon,
+  PiEyeDuotone as ShowIcon
 } from 'react-icons/pi';
-import { ActionIcon, Button, Group, GroupProps, Tooltip } from '@mantine/core';
 
 export interface DataTableActionsProps extends GroupProps {
   onEdit?: (() => void) | null;
@@ -13,6 +14,7 @@ export interface DataTableActionsProps extends GroupProps {
   onDelete?: (() => void) | null;
   onRestore?: (() => void) | null;
   onUpdate?: (() => void) | null;
+  onResolve?: (() => void) | null;
 }
 
 export function DataTableActions({
@@ -24,6 +26,7 @@ export function DataTableActions({
   onDelete,
   onRestore,
   onUpdate,
+  onResolve,
   children,
   ...props
 }: DataTableActionsProps) {
@@ -83,6 +86,18 @@ export function DataTableActions({
             disabled={onRestore === null}
           >
             <RestoreIcon size="1rem" />
+          </ActionIcon>
+        </Tooltip>
+      )}
+      {onResolve !== undefined && (
+        <Tooltip label="Resolve">
+          <ActionIcon
+            variant="default"
+            color="green"
+            onClick={onResolve !== null ? onResolve : undefined}
+            disabled={onResolve === null}
+          >
+            <PiCheck size="1rem" />
           </ActionIcon>
         </Tooltip>
       )}

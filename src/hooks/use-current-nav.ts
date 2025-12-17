@@ -8,11 +8,11 @@ export default function useCurrentNav() {
   const { user } = useAuth();
 
   const currentNav = useMemo(() => {
-    const menus = getMenusForRole(user?.role ?? '');
+    const menus = getMenusForRole(user?.role ?? '', user?.department);
     return menus.find((link) => {
       return pathname.includes(link.href);
     });
-  }, [pathname, user?.role]);
+  }, [pathname, user?.role, user?.department]);
 
   return currentNav;
 }

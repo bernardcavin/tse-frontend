@@ -26,7 +26,7 @@ export default function Navbar() {
   // Filter menus based on user role - will re-compute when user.role changes
   const visibleMenus = useMemo(() => {
     console.log('[Sidebar] Computing visible menus for role:', user?.role);
-    const menus = getMenusForRole(user?.role ?? '');
+    const menus = getMenusForRole(user?.role ?? '', user?.department);
     console.log('[Sidebar] Visible menus count:', menus.length, menus.map(m => m.label));
     return menus;
   }, [user?.role]);

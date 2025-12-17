@@ -1,0 +1,317 @@
+import { useHazardObservations } from '@/api/resources/hazard-observations';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
+import { useGetAttendanceRecords } from '@/hooks/api/attendance';
+import { useGetEmployees } from '@/hooks/api/employees';
+import { paths } from '@/routes';
+import {
+  Badge,
+  Button,
+  Card,
+  Grid,
+  Group,
+  Loader,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title
+} from '@mantine/core';
+import { DatePickerInput, DateValue } from '@mantine/dates';
+import {
+  IconCalendar,
+  IconFileAlert,
+  IconUser,
+  IconX
+} from '@tabler/icons-react';
+import { DataTable } from 'mantine-datatable';
+import { useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
+
+export default function EmployeeDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  
+  // Date filters state
+  const [attendanceDateRange, setAttendanceDateRange] = useState<[DateValue, DateValue]>([null, null]);
+  const [hocDateRange, setHocDateRange] = useState<[DateValue, DateValue]>([null, null]);
+  
+  // Fetch all employees and find the specific one
+  const { data: employees, isLoading: employeeLoading } = useGetEmployees();
+  const employee = useMemo(() => {
+    return employees?.find(emp => emp.id === id);
+  }, [employees, id]);
+  
+  // Fetch attendance records for this employee with date filters
+  const { data: attendanceData, isLoading: attendanceLoading } = useGetAttendanceRecords({query: {
+    user_id: id,
+    start_date: attendanceDateRange[0],
+    end_date: attendanceDateRange[1],
+  }});
+  
+  // Fetch hazard observations for this employee
+  const { data: hazardData, isLoading: hazardLoading } = useHazardObservations();
+
+  // Filter hazard observations by observer_id and date range on frontend
+  const employeeHazards = useMemo(() => {
+    if (!hazardData?.data) return [];
+    let filtered = hazardData.data.filter((obs: any) => obs.observer_id === id);
+    
+    // Apply date filters if set
+    if (hocDateRange[0]) {
+      filtered = filtered.filter((obs: any) => 
+        new Date(obs.observation_date) >= hocDateRange[0]!
+      );
+    }
+    if (hocDateRange[1]) {
+      filtered = filtered.filter((obs: any) => 
+        new Date(obs.observation_date) <= hocDateRange[1]!
+      );
+    }
+    
+    return filtered;
+  }, [hazardData, id, hocDateRange]);
+
+  if (employeeLoading || !employee) {
+    return (
+      <Page title="Employee Details">
+        <Group justify="center" py="xl">
+          <Loader size="lg" />
+        </Group>
+      </Page>
+    );
+  }
+
+  const breadcrumbs = [
+    { label: 'Employees', href: paths.manager.employees },
+    { label: employee.name || 'Employee Details', href: paths.manager.employeeDetail(id!) },
+  ];
+
+  // Calculate statistics
+  const totalAttendanceDays = attendanceData?.data?.length || 0;
+  const totalHOCs = employeeHazards.length;
+  const openHOCs = employeeHazards.filter((h: any) => h.status === 'open').length;
+  const resolvedHOCs = employeeHazards.filter((h: any) => h.status === 'resolved').length;
+
+  // Attendance columns
+  const attendanceColumns = [
+    {
+      accessor: 'check_in_time' as const,
+      title: 'Date',
+      render: (record: any) => new Date(record.check_in_time).toLocaleDateString(),
+    },
+    {
+      accessor: 'check_in_time' as const,
+      title: 'Check In',
+      render: (record: any) => new Date(record.check_in_time).toLocaleTimeString(),
+    },
+    {
+      accessor: 'check_out_time' as const,
+      title: 'Check Out',
+      render: (record: any) => record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString() : '-',
+    },
+    {
+      accessor: 'location_id' as const,
+      title: 'Location',
+      render: (record: any) => record.location_name || record.location_id,
+    },
+  ];
+
+  // Hazard observations columns
+  const hazardColumns = [
+    {
+      accessor: 'observation_date' as const,
+      title: 'Date',
+      render: (record: any) => new Date(record.observation_date).toLocaleDateString(),
+    },
+    {
+      accessor: 'facility_name' as const,
+      title: 'Facility',
+      render: (record: any) => record.facility_name || record.facility_id,
+    },
+    {
+      accessor: 'unsafe_action_condition' as const,
+      title: 'Description',
+      ellipsis: true,
+    },
+    {
+      accessor: 'status' as const,
+      title: 'Status',
+      render: (record: any) => (
+        <Badge
+          color={
+            record.status === 'open' ? 'red' :
+            record.status === 'in_progress' ? 'yellow' :
+            record.status === 'resolved' ? 'green' : 'gray'
+          }
+        >
+          {record.status?.replace('_', ' ').toUpperCase()}
+        </Badge>
+      ),
+    },
+  ];
+
+  return (
+    <Page title={`Employee: ${employee.name}`}>
+      <PageHeader title={employee.name || 'Employee Details'} breadcrumbs={breadcrumbs} />
+
+      <Stack gap="lg">
+        {/* Employee Info Card */}
+        <Card padding="lg" radius="md" withBorder>
+          <Stack gap="md">
+            <Group>
+              <IconUser size={24} />
+              <Title order={3}>Employee Information</Title>
+            </Group>
+            <Grid>
+              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                <Text size="sm" c="dimmed">Email</Text>
+                <Text fw={500}>{employee.email || '-'}</Text>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                <Text size="sm" c="dimmed">Department</Text>
+                <Text fw={500}>{employee.department || '-'}</Text>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                <Text size="sm" c="dimmed">Position</Text>
+                <Text fw={500}>{employee.position || '-'}</Text>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                <Text size="sm" c="dimmed">Hire Date</Text>
+                <Text fw={500}>
+                  {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : '-'}
+                </Text>
+              </Grid.Col>
+            </Grid>
+          </Stack>
+        </Card>
+
+        {/* Statistics Cards */}
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
+          <Card padding="md" radius="md" withBorder>
+            <Group justify="space-between">
+              <Stack gap={0}>
+                <Text size="xs" c="dimmed" fw={500}>Total Attendance Days</Text>
+                <Text size="xl" fw={700}>{totalAttendanceDays}</Text>
+              </Stack>
+              <IconCalendar size={32} stroke={1.5} color="var(--mantine-color-blue-6)" />
+            </Group>
+          </Card>
+          <Card padding="md" radius="md" withBorder>
+            <Group justify="space-between">
+              <Stack gap={0}>
+                <Text size="xs" c="dimmed" fw={500}>Total HOCs</Text>
+                <Text size="xl" fw={700}>{totalHOCs}</Text>
+              </Stack>
+              <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-violet-6)" />
+            </Group>
+          </Card>
+          <Card padding="md" radius="md" withBorder>
+            <Group justify="space-between">
+              <Stack gap={0}>
+                <Text size="xs" c="dimmed" fw={500}>Open HOCs</Text>
+                <Text size="xl" fw={700}>{openHOCs}</Text>
+              </Stack>
+              <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-red-6)" />
+            </Group>
+          </Card>
+          <Card padding="md" radius="md" withBorder>
+            <Group justify="space-between">
+              <Stack gap={0}>
+                <Text size="xs" c="dimmed" fw={500}>Resolved HOCs</Text>
+                <Text size="xl" fw={700}>{resolvedHOCs}</Text>
+              </Stack>
+              <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-green-6)" />
+            </Group>
+          </Card>
+        </SimpleGrid>
+
+        {/* Attendance Records Table */}
+        <Card padding="lg" radius="md" withBorder>
+          <Stack gap="md">
+            <Group justify="space-between">
+              <Title order={4}>Attendance Records</Title>
+              <Group gap="sm">
+                <DatePickerInput
+                  type="range"
+                  placeholder="Pick date range"
+                  value={attendanceDateRange}
+                  onChange={setAttendanceDateRange}
+                  clearable
+                  size="xs"
+                  leftSection={<IconCalendar size={16} />}
+                />
+                {(attendanceDateRange[0] || attendanceDateRange[1]) && (
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => setAttendanceDateRange([null, null])}
+                    leftSection={<IconX size={14} />}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </Group>
+            </Group>
+            {attendanceLoading ? (
+              <Group justify="center" py="xl">
+                <Loader />
+              </Group>
+            ) : (
+              <DataTable
+              mih={200}
+                columns={attendanceColumns}
+                records={attendanceData?.data || []}
+                totalRecords={attendanceData?.meta?.total || 0}
+                fetching={attendanceLoading}
+              />
+            )}
+          </Stack>
+        </Card>
+
+        {/* Hazard Observations Table */}
+        <Card padding="lg" radius="md" withBorder>
+          <Stack gap="md">
+            <Group justify="space-between">
+              <Title order={4}>Hazard Observation Cards</Title>
+              <Group gap="sm">
+                <DatePickerInput
+                  type="range"
+                  placeholder="Pick date range"
+                  value={hocDateRange}
+                  onChange={setHocDateRange}
+                  clearable
+                  size="xs"
+                  leftSection={<IconCalendar size={16} />}
+                />
+                {(hocDateRange[0] || hocDateRange[1]) && (
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    color="gray"
+                    onClick={() => setHocDateRange([null, null])}
+                    leftSection={<IconX size={14} />}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </Group>
+            </Group>
+            {hazardLoading ? (
+              <Group justify="center" py="xl">
+                <Loader />
+              </Group>
+            ) : (
+              <DataTable
+              mih={200}
+                columns={hazardColumns}
+                records={employeeHazards}
+                totalRecords={employeeHazards.length}
+                fetching={hazardLoading}
+              />
+            )}
+          </Stack>
+        </Card>
+      </Stack>
+    </Page>
+  );
+}
