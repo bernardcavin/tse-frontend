@@ -8,24 +8,11 @@ import { useAuth } from '@/hooks';
 import { useDeleteInventory, useGetInventoryList } from '@/hooks/api/inventory';
 import { formatDateReadable } from '@/utilities/date';
 import { icons } from '@/utilities/icons';
-import { Badge, Tabs, Text } from '@mantine/core';
+import { Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
-import {
-    IconBriefcase,
-    IconBuildingWarehouse,
-    IconCategory,
-    IconDeviceDesktop,
-    IconDots,
-    IconFirstAidKit,
-    IconPackage,
-    IconShieldCheck,
-    IconShoppingCart,
-    IconSofa,
-    IconTool,
-} from '@tabler/icons-react';
 import { DataTableColumn } from 'mantine-datatable';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import z from 'zod';
 import { openInventoryCreate, openInventoryEdit, openInventoryView } from './inventory-modals';
 
@@ -36,25 +23,13 @@ type SortableFields = Pick<
   'item_name' | 'item_category' | 'item_description' | 'item_code'
 >;
 
-// Category definitions with icons
-const CATEGORIES = [
-  { value: 'all', label: 'All', icon: IconCategory },
-  { value: 'Safety Equipment', label: 'Safety Equipment', icon: IconShieldCheck },
-  { value: 'Office Supplies', label: 'Office Supplies', icon: IconBriefcase },
-  { value: 'Tools & Equipment', label: 'Tools & Equipment', icon: IconTool },
-  { value: 'Furniture', label: 'Furniture', icon: IconSofa },
-  { value: 'Electronics', label: 'Electronics', icon: IconDeviceDesktop },
-  { value: 'Consumables', label: 'Consumables', icon: IconShoppingCart },
-  { value: 'Raw Materials', label: 'Raw Materials', icon: IconPackage },
-  { value: 'Maintenance Supplies', label: 'Maintenance Supplies', icon: IconBuildingWarehouse },
-  { value: 'Medical Supplies', label: 'Medical Supplies', icon: IconFirstAidKit },
-  { value: 'Other', label: 'Other', icon: IconDots },
-] as const;
+interface InventoryTableProps {
+  category?: string;
+}
 
-export function InventoryTable() {
+export function InventoryTable({ category }: InventoryTableProps) {
   const { user } = useAuth();
   const isManager = user?.role === 'MANAGER';
-  const [activeCategory, setActiveCategory] = useState<string>('all');
 
   const { page, limit, setLimit, setPage } = usePagination();
   const { filters, sort } = DataTable.useDataTable<SortableFields>({
@@ -72,23 +47,12 @@ export function InventoryTable() {
     },
   });
 
-  // Filter data based on selected category
+  // Filter data based on category prop
   const filteredData = useMemo(() => {
     if (!data?.data) return [];
-    if (activeCategory === 'all') return data.data;
-    return data.data.filter((item) => item.item_category === activeCategory);
-  }, [data?.data, activeCategory]);
-
-  // Count items per category for badge display
-  const categoryCounts = useMemo(() => {
-    if (!data?.data) return {};
-    const counts: Record<string, number> = { all: data.data.length };
-    data.data.forEach((item) => {
-      const category = item.item_category || 'Other';
-      counts[category] = (counts[category] || 0) + 1;
-    });
-    return counts;
-  }, [data?.data]);
+    if (!category) return data.data;
+    return data.data.filter((item) => item.item_category === category);
+  }, [data?.data, category]);
 
   const { mutate: deleteInventory } = useDeleteInventory();
   const handleDelete = useCallback(
@@ -142,7 +106,8 @@ export function InventoryTable() {
         title: 'Manufacturer',
         sortable: true,
       },
-      ...(activeCategory === 'all'
+      // Only show category column when viewing all categories
+      ...(!category
         ? [
             {
               accessor: 'item_category',
@@ -216,66 +181,22 @@ export function InventoryTable() {
         ),
       },
     ],
-    [isManager, handleDelete, activeCategory]
+    [isManager, handleDelete, category]
   );
 
   const Icon = icons.inventory;
-
-  // Handle tab change and reset page
-  const handleCategoryChange = (value: string | null) => {
-    if (value) {
-      setActiveCategory(value);
-      setPage(1);
-    }
-  };
 
   return (
     <DataTable.Container>
       <DataTable.Title
         icon={<Icon size={25} />}
-        title="Inventory"
+        title={category ? `${category}` : 'All Inventory'}
         actions={
           <AddButton variant="default" size="xs" onClick={() => openInventoryCreate(refetch)}>
             Add Inventory
           </AddButton>
         }
       />
-
-      {/* Category Tabs */}
-      <Tabs
-        value={activeCategory}
-        onChange={handleCategoryChange}
-        variant="outline"
-        mb="md"
-        styles={{
-          root: { overflow: 'auto' },
-          list: { flexWrap: 'nowrap' },
-        }}
-      >
-        <Tabs.List>
-          {CATEGORIES.map((category) => {
-            const CategoryIcon = category.icon;
-            const count = categoryCounts[category.value] || 0;
-            return (
-              <Tabs.Tab
-                key={category.value}
-                value={category.value}
-                leftSection={<CategoryIcon size={16} />}
-                rightSection={
-                  count > 0 ? (
-                    <Badge size="xs" variant="filled" circle>
-                      {count}
-                    </Badge>
-                  ) : null
-                }
-              >
-                {category.label}
-              </Tabs.Tab>
-            );
-          })}
-        </Tabs.List>
-      </Tabs>
-
       <DataTable.Filters filters={filters.filters} onClear={filters.clear} />
       <DataTable.Content>
         <DataTable.Table
