@@ -100,7 +100,7 @@ export function useDeleteAttendanceLocation() {
 
 export const useGetAttendanceRecords = createPaginationQueryHook<
   typeof AttendanceRecord,
-  SortableQueryParams
+  SortableQueryParams & { user_id?: string; start_date?: string; end_date?: string }
 >({
   endpoint: '/attendance/records',
   dataSchema: AttendanceRecord,

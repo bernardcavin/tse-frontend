@@ -1,16 +1,16 @@
 import { useCheckIn, useCheckOut, useGetAttendanceStatus } from '@/hooks/api/attendance';
 import {
-    Alert,
-    Badge,
-    Box,
-    Button,
-    Card,
-    Center,
-    Group,
-    Loader,
-    Stack,
-    Text,
-    Title
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Center,
+  Group,
+  Loader,
+  Stack,
+  Text,
+  Title
 } from '@mantine/core';
 import { IconAlertCircle, IconCheck, IconMapPin, IconQrcode } from '@tabler/icons-react';
 import { Scanner } from '@yudiel/react-qr-scanner';
@@ -26,8 +26,8 @@ export function EmployeeCheckIn() {
   const { mutate: checkIn, isPending: checkingIn } = useCheckIn();
   const { mutate: checkOut, isPending: checkingOut } = useCheckOut();
 
-  const activeCheckIn = statusData?.active_check_in;
-  const isCheckedIn = statusData?.is_checked_in ?? false;
+  const activeCheckIn = statusData;
+  const isCheckedIn = statusData?.status === 'checked_in';
 
   // Get user location
   useEffect(() => {

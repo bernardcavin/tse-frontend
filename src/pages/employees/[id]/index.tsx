@@ -34,6 +34,11 @@ export default function EmployeeDetailPage() {
   const [attendanceDateRange, setAttendanceDateRange] = useState<[DateValue, DateValue]>([null, null]);
   const [hocDateRange, setHocDateRange] = useState<[DateValue, DateValue]>([null, null]);
   
+  // Pagination state
+  const [attendancePage, setAttendancePage] = useState(1);
+  const [hocPage, setHocPage] = useState(1);
+  const PAGE_SIZE = 10;
+  
   // Fetch all employees and find the specific one
   const { data: employees, isLoading: employeeLoading } = useGetEmployees();
   const employee = useMemo(() => {
@@ -43,8 +48,8 @@ export default function EmployeeDetailPage() {
   // Fetch attendance records for this employee with date filters
   const { data: attendanceData, isLoading: attendanceLoading } = useGetAttendanceRecords({query: {
     user_id: id,
-    start_date: attendanceDateRange[0],
-    end_date: attendanceDateRange[1],
+    start_date: attendanceDateRange[0] ? attendanceDateRange[0].toString() : undefined,
+    end_date: attendanceDateRange[1] ? attendanceDateRange[1].toString() : undefined,
   }});
   
   // Fetch hazard observations for this employee
@@ -258,11 +263,15 @@ export default function EmployeeDetailPage() {
               </Group>
             ) : (
               <DataTable
-              mih={200}
+                withTableBorder={false}
+                mih={200}
                 columns={attendanceColumns}
                 records={attendanceData?.data || []}
                 totalRecords={attendanceData?.meta?.total || 0}
                 fetching={attendanceLoading}
+                page={attendancePage}
+                onPageChange={setAttendancePage}
+                recordsPerPage={PAGE_SIZE}
               />
             )}
           </Stack>
@@ -302,11 +311,15 @@ export default function EmployeeDetailPage() {
               </Group>
             ) : (
               <DataTable
-              mih={200}
+                withTableBorder={false}
+                mih={200}
                 columns={hazardColumns}
                 records={employeeHazards}
                 totalRecords={employeeHazards.length}
                 fetching={hazardLoading}
+                page={hocPage}
+                onPageChange={setHocPage}
+                recordsPerPage={PAGE_SIZE}
               />
             )}
           </Stack>
