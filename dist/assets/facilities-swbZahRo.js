@@ -1,0 +1,1 @@
+import{bv as t,bJ as i,bw as s}from"./index-CaG8M5h2.js";import{b as o}from"./facility-rqyB8Iqp.js";async function c(){const a=await t.get("facilities/utils/options");return i.array().parse(s.parse(a.data).data)}async function p(a){const e=await t.get(`facilities/${a}/coordinates`);return o.parse(s.parse(e.data).data)}export{c as a,p as g};
