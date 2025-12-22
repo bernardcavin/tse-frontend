@@ -1,19 +1,20 @@
 import { useHazardObservation } from '@/api/resources/hazard-observations';
 import { FormSection } from '@/components/form-section';
+import { CarouselImageAttachment } from '@/components/image-attachment';
 import {
-  Badge,
-  Divider,
-  Grid,
-  Group,
-  Loader,
-  Stack,
-  Text,
+    Badge,
+    Divider,
+    Grid,
+    Group,
+    Loader,
+    Stack,
+    Text,
 } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import {
-  CreateHazardObservationForm,
-  EditHazardObservationForm,
-  ResolveHazardObservationForm,
+    CreateHazardObservationForm,
+    EditHazardObservationForm,
+    ResolveHazardObservationForm,
 } from './hazard-observations-forms';
 
 interface ViewHazardObservationProps {
@@ -43,6 +44,13 @@ export function ViewHazardObservation({ id }: ViewHazardObservationProps) {
 
   return (
     <Stack gap="lg">
+      {/* 🔹 Photos */}
+      {observation.photo_file_ids && observation.photo_file_ids.length > 0 && (
+        <FormSection title="Photos">
+          <CarouselImageAttachment file_ids={observation.photo_file_ids} alt="Hazard Observation" />
+        </FormSection>
+      )}
+
       <FormSection title="Observer Information">
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6 }}>

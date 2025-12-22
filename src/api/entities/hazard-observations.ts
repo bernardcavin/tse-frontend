@@ -42,6 +42,7 @@ export const ControlMeasure = z.enum([
 // Main entity
 export const HazardObservation = z.object({
   id: z.string().uuid().optional().nullable(),
+  photo_file_ids: z.array(z.string().uuid()).optional().nullable(),
   observer_id: z.string().uuid(),
   observer_name: z.string().optional().nullable(),
   facility_id: z.string().uuid(),
@@ -80,6 +81,7 @@ export const HazardObservationCreate = z.object({
   control_measures: z.array(ControlMeasure).optional().nullable(),
   control_measure_other: z.string().optional().nullable(),
   corrective_action: z.string().optional().nullable(),
+  photo_file_ids: z.array(z.string().uuid()).optional().nullable(),
 });
 
 // Update schema
@@ -97,6 +99,7 @@ export const HazardObservationUpdate = z.object({
   control_measure_other: z.string().optional().nullable(),
   corrective_action: z.string().optional().nullable(),
   status: ObservationStatus.optional(),
+  photo_file_ids: z.array(z.string().uuid()).optional().nullable(),
 });
 
 // Resolve schema

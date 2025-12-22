@@ -1,30 +1,32 @@
 import {
-  HazardObservationCreate,
-  HazardObservationResolve,
-  HazardObservationUpdate
+    HazardObservationCreate,
+    HazardObservationResolve,
+    HazardObservationUpdate
 } from '@/api/entities/hazard-observations';
 import { getFacilityOptions } from '@/api/resources/facilities';
 import {
-  useCreateHazardObservation,
-  useHazardObservation,
-  useResolveHazardObservation,
-  useUpdateHazardObservation,
+    useCreateHazardObservation,
+    useHazardObservation,
+    useResolveHazardObservation,
+    useUpdateHazardObservation,
 } from '@/api/resources/hazard-observations';
 import { FormSection } from '@/components/form-section';
+import { ImageUpload } from '@/components/forms/file-upload';
+import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
 import { normalizeDate } from '@/utilities/date';
 import { handleFormErrors } from '@/utilities/form';
 import {
-  Button,
-  Checkbox,
-  Grid,
-  Group,
-  Loader,
-  Select,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
+    Button,
+    Checkbox,
+    Grid,
+    Group,
+    Loader,
+    Select,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
 } from '@mantine/core';
 import { DatePickerInput, TimeInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
@@ -99,6 +101,14 @@ export function HazardObservationForm({ form }: HazardObservationFormProps) {
 
   return (
     <Stack gap="md">
+      {/* 🔹 Photos */}
+      <ImageUpload
+        name="photo_file_ids"
+        title="Photos"
+        multiple
+        description="Upload photos of the hazard observation"
+      />
+
       {/* 🔹 Observer Information */}
       <FormSection title="Observer Information (Informasi Pengamat)">
         <Grid>
@@ -252,31 +262,37 @@ export function CreateHazardObservationForm({ onSubmit }: FormProps) {
     },
   });
 
+  const fileIdManager = useFileIdManager();
+  const { updateFilesMetadata } = fileIdManager;
+
   const handleSubmit = form.onSubmit((values: any) => {
     console.log(values)
     createObservation(values, {
       onError: (error) => handleFormErrors(form, error),
       onSuccess: () => {
         onSubmit();
+        updateFilesMetadata();
       },
     });
   });
 
   return (
     <FormProvider form={form} onSubmit={handleSubmit}>
-      <Stack>
-        <HazardObservationForm form={form} />
-        <Group justify="flex-end">
-          <Button
-            type="submit"
-            loading={isPending}
-            mt="md"
-            leftSection={<IconPlus size={16} stroke={5} />}
-          >
-            Add Observation
-          </Button>
-        </Group>
-      </Stack>
+      <FileIdProvider fileIdManager={fileIdManager}>
+        <Stack>
+          <HazardObservationForm form={form} />
+          <Group justify="flex-end">
+            <Button
+              type="submit"
+              loading={isPending}
+              mt="md"
+              leftSection={<IconPlus size={16} stroke={5} />}
+            >
+              Add Observation
+            </Button>
+          </Group>
+        </Stack>
+      </FileIdProvider>
     </FormProvider>
   );
 }
@@ -303,6 +319,9 @@ export function EditHazardObservationForm({ onSubmit, id }: EditHazardObservatio
     }
   }, [data]);
 
+  const fileIdManager = useFileIdManager();
+  const { updateFilesMetadata } = fileIdManager;
+
   const handleSubmit = form.onSubmit((values: any) => {
     
     updateObservation(
@@ -311,6 +330,7 @@ export function EditHazardObservationForm({ onSubmit, id }: EditHazardObservatio
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {
           onSubmit();
+          updateFilesMetadata();
         },
       }
     );
@@ -320,19 +340,21 @@ export function EditHazardObservationForm({ onSubmit, id }: EditHazardObservatio
     <Loader color="blue" size="xl" />
   ) : (
     <FormProvider form={form} onSubmit={handleSubmit}>
-      <Stack>
-        <HazardObservationForm form={form} />
-        <Group justify="flex-end">
-          <Button
-            type="submit"
-            loading={isPending}
-            mt="md"
-            leftSection={<IconDeviceFloppy size={16} stroke={2} />}
-          >
-            Save Changes
-          </Button>
-        </Group>
-      </Stack>
+      <FileIdProvider fileIdManager={fileIdManager}>
+        <Stack>
+          <HazardObservationForm form={form} />
+          <Group justify="flex-end">
+            <Button
+              type="submit"
+              loading={isPending}
+              mt="md"
+              leftSection={<IconDeviceFloppy size={16} stroke={2} />}
+            >
+              Save Changes
+            </Button>
+          </Group>
+        </Stack>
+      </FileIdProvider>
     </FormProvider>
   );
 }
