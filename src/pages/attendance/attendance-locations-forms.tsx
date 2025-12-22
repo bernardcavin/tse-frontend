@@ -39,7 +39,11 @@ function LocationPicker({ onLocationChange, initialLat, initialLon }: any) {
   };
 
   useEffect(() => {
-    if (initialLat && initialLon) {
+    // Validate latitude (-90 to 90) and longitude (-180 to 180)
+    const isValidLat = typeof initialLat === 'number' && initialLat >= -90 && initialLat <= 90;
+    const isValidLon = typeof initialLon === 'number' && initialLon >= -180 && initialLon <= 180;
+    
+    if (isValidLat && isValidLon) {
       setPosition([initialLat, initialLon]);
     }
   }, [initialLat, initialLon]);
