@@ -1,0 +1,1 @@
+import{r as e,j as p,ae as n,ad as u}from"./index-Cs1QGpHj.js";import{u as a}from"./form-Bq269LHv.js";const m=e.forwardRef(({name:r,...t},o)=>{const s=a();return p.jsx(n,{ref:o,...t,...s.getInputProps(r)},s.key(r))}),I=e.forwardRef(({name:r,...t},o)=>{const s=a();return p.jsx(u,{ref:o,...t,...s.getInputProps(r)},s.key(r))});export{m as P,I as T};
