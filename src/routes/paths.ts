@@ -17,6 +17,8 @@ export const paths = {
     employees: '/manager/employees',
     employeeDetail: (id: string) => `/manager/employees/${id}`,
     attendance: '/manager/attendance',
+    attendanceCheckIn: '/manager/attendance/check-in',
+    attendanceManagement: '/manager/attendance/management',
     hazardObservations: '/manager/hazard-observations',
   },
   employee: {

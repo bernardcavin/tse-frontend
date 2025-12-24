@@ -46,14 +46,14 @@ export function AttendanceRecordsTable() {
   const columns: DataTableColumn<AttendanceRecordType>[] = useMemo(
     () => [
       {
-        accessor: 'user_id',
+        accessor: 'employee_name',
         title: 'Employee',
-        render: ({ user_id }) => user_id.substring(0, 8) + '...',
+        render: ({ employee_name }) => employee_name ?? '-',
       },
       {
-        accessor: 'location_id',
+        accessor: 'location_name',
         title: 'Location',
-        render: ({ location_id }) => location_id.substring(0, 8) + '...',
+        render: ({ location_name }) => location_name ?? '-',
       },
       {
         accessor: 'check_in_time',

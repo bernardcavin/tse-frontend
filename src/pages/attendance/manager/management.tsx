@@ -5,21 +5,22 @@ import { paths } from '@/routes';
 import { Stack } from '@mantine/core';
 import { AttendanceLocationsTable } from '../attendance-locations-table';
 import { AttendanceRecordsTable } from '../attendance-records-table';
-import { EmployeeCheckIn } from '../employee/employee-check-in';
 
-export default function ManagerAttendancePage() {
+export default function ManagerAttendanceManagementPage() {
   const { user } = useAuth();
 
   const attendancePath =
     user?.role === 'MANAGER' ? paths.manager.attendance : paths.employee.attendance;
-  const breadcrumbs = [{ label: 'Attendance', href: attendancePath }, { label: 'Management' }];
+  const breadcrumbs = [
+    { label: 'Attendance', href: attendancePath },
+    { label: 'Management' },
+  ];
 
   return (
     <Page title="Attendance Management">
       <PageHeader title="Attendance Management" breadcrumbs={breadcrumbs} />
 
       <Stack gap="lg">
-        <EmployeeCheckIn />
         <AttendanceLocationsTable />
         <AttendanceRecordsTable />
       </Stack>

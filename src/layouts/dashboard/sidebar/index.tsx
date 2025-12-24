@@ -9,7 +9,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import classes from './navbar.module.css';
 
-export default function Navbar() {
+interface NavbarProps {
+  onNavigate?: () => void;
+}
+
+export default function Navbar({ onNavigate }: NavbarProps = {}) {
   const theme = useMantineTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -113,6 +117,7 @@ export default function Navbar() {
                           }
                         } else {
                           navigate(href);
+                          onNavigate?.();
                         }
                       }}
                       data-active={isActive}
@@ -128,7 +133,7 @@ export default function Navbar() {
         </Flex>
       </Flex>
 
-      <SubNavBar appTitle={currentAppTitle} isNavbarOpen={isNavbarCollapse} />
+      <SubNavBar appTitle={currentAppTitle} isNavbarOpen={isNavbarCollapse} onNavigate={onNavigate} />
     </Flex>
   );
 }

@@ -1,15 +1,15 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Center, Flex, Group, Indicator, Text, Tooltip, useMantineTheme } from '@mantine/core';
-import { NoData } from '@/components/no-data';
 import useCurrentSubNav from '@/hooks/use-current-sub-nav';
+import { Flex, Group, Text, Tooltip, useMantineTheme } from '@mantine/core';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import classes from './sub-navbar.module.css';
 
 interface Props {
   isNavbarOpen: boolean;
   appTitle: string;
+  onNavigate?: () => void;
 }
 
-export default function SubNavBar({ isNavbarOpen, appTitle }: Props) {
+export default function SubNavBar({ isNavbarOpen, appTitle, onNavigate }: Props) {
   const theme = useMantineTheme();
   const currentNav = useCurrentSubNav({ appTitle });
 
@@ -72,6 +72,7 @@ export default function SubNavBar({ isNavbarOpen, appTitle }: Props) {
                       to={href}
                       onClick={() => {
                         navigate(href);
+                        onNavigate?.();
                       }}
                     >
                       {icon}

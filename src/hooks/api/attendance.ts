@@ -1,18 +1,19 @@
 import {
-  AttendanceLocation,
-  AttendanceRecord
+    AttendanceLocation,
+    AttendanceRecord,
+    AttendanceStatus_Response
 } from '@/api/entities/attendance';
 import {
-  createGetQueryHook,
-  createPaginationQueryHook,
-  SortableQueryParams,
+    createGetQueryHook,
+    createPaginationQueryHook,
+    SortableQueryParams,
 } from '@/api/helpers';
 import {
-  checkIn,
-  checkOut,
-  createAttendanceLocation,
-  deleteAttendanceLocation,
-  updateAttendanceLocation,
+    checkIn,
+    checkOut,
+    createAttendanceLocation,
+    deleteAttendanceLocation,
+    updateAttendanceLocation,
 } from '@/api/resources/attendance';
 import { notifications } from '@mantine/notifications';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -157,9 +158,10 @@ export function useCheckOut() {
 
 export const useGetAttendanceStatus = createGetQueryHook({
   endpoint: '/attendance/status',
-  responseSchema: AttendanceRecord.nullable(),
+  responseSchema: AttendanceStatus_Response,
   rQueryParams: {
     queryKey: ['attendance-status'],
     refetchInterval: 10000, // Refetch every 10 seconds
   },
 });
+

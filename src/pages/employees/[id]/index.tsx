@@ -5,23 +5,23 @@ import { useGetAttendanceRecords } from '@/hooks/api/attendance';
 import { useGetEmployees } from '@/hooks/api/employees';
 import { paths } from '@/routes';
 import {
-  Badge,
-  Button,
-  Card,
-  Grid,
-  Group,
-  Loader,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title
+    Badge,
+    Button,
+    Card,
+    Grid,
+    Group,
+    Loader,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title
 } from '@mantine/core';
 import { DatePickerInput, DateValue } from '@mantine/dates';
 import {
-  IconCalendar,
-  IconFileAlert,
-  IconUser,
-  IconX
+    IconCalendar,
+    IconFileAlert,
+    IconUser,
+    IconX
 } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
 import { useMemo, useState } from 'react';
@@ -114,9 +114,9 @@ export default function EmployeeDetailPage() {
       render: (record: any) => record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString() : '-',
     },
     {
-      accessor: 'location_id' as const,
+      accessor: 'location_name' as const,
       title: 'Location',
-      render: (record: any) => record.location_name || record.location_id,
+      render: (record: any) => record.location_name || '-',
     },
   ];
 

@@ -4,7 +4,9 @@ import {
     BsBuildingFillGear,
     BsClock,
     BsExclamationCircle,
+    BsGear,
     BsPeopleFill,
+    BsQrCode,
     BsTools
 } from 'react-icons/bs';
 
@@ -16,6 +18,8 @@ export const icons = {
   clock: BsClock,
   building: BsBuilding,
   alert: BsExclamationCircle,
+  qrCode: BsQrCode,
+  settings: BsGear,
 };
 
 export function DataIcon({ label }: { label: keyof typeof icons }) {

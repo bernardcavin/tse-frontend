@@ -21,6 +21,8 @@ export const AttendanceRecord = z.object({
   id: z.string().uuid().optional().nullable(),
   user_id: z.string().uuid(),
   location_id: z.string().uuid(),
+  employee_name: z.string().optional().nullable(),
+  location_name: z.string().optional().nullable(),
   check_in_time: z.coerce.date(),
   check_in_latitude: z.number().optional().nullable(),
   check_in_longitude: z.number().optional().nullable(),

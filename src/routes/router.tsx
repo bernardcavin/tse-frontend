@@ -92,7 +92,15 @@ const router = createBrowserRouter([
       /* ------------------------------- ATTENDANCE ------------------------------- */
       {
         path: paths.manager.attendance,
-        element: LazyPage(() => import('@/pages/attendance/manager')),
+        element: <Navigate to={paths.manager.attendanceCheckIn} replace />,
+      },
+      {
+        path: paths.manager.attendanceCheckIn,
+        element: LazyPage(() => import('@/pages/attendance/manager/check-in')),
+      },
+      {
+        path: paths.manager.attendanceManagement,
+        element: LazyPage(() => import('@/pages/attendance/manager/management')),
       },
 
       /* ------------------------------- HAZARD OBSERVATIONS ------------------------------- */

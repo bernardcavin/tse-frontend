@@ -45,6 +45,22 @@ export const MANAGER_MENUS: SideLink[] = [
     label: 'Attendance',
     href: paths.manager.attendance,
     icon: icons.clock,
+    subs: [
+      {
+        title: 'Check In',
+        label: 'Check In',
+        href: paths.manager.attendanceCheckIn,
+        description: 'Scan QR code to check in',
+        icon: icons.qrCode,
+      },
+      {
+        title: 'Management',
+        label: 'Management',
+        href: paths.manager.attendanceManagement,
+        description: 'Manage locations & records',
+        icon: icons.settings,
+      },
+    ],
   },
   {
     title: 'Hazard Observations',
