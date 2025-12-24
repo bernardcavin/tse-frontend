@@ -1,0 +1,1 @@
+function o(n){return typeof n=="object"&&n!==null&&!Array.isArray(n)&&!(n instanceof Date)}function c(n){if(o(n)){const t={};for(const r in n){const e=n[r];e===""?t[r]=null:t[r]=c(e)}return t}return n}export{c as e};

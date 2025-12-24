@@ -1,6 +1,6 @@
 export const app = {
   name: 'Total Safety Energy',
-  apiBaseUrl: 'http://localhost:8000',
+  apiBaseUrl: 'https://api.dev-apetrol.site',
   fakeBackend: false,
   redirectQueryParamName: 'r',
   accessTokenStoreKey: 'access_token',

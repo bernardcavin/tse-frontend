@@ -1,0 +1,1 @@
+import{r,cp as s,j as e,cq as x,b as m,B as i}from"./index--ClWZahu.js";const d=r.forwardRef(({children:t,title:a="",p:o="md",meta:n,withFooter:j=!0,...c},p)=>(r.useEffect(()=>(s.complete(),()=>s.start()),[]),e.jsxs(e.Fragment,{children:[e.jsxs(x,{children:[e.jsx("title",{children:`${a} | ${m.name}`}),n]}),e.jsx(i,{ref:p,...c,p:o,children:t})]})));export{d as P};

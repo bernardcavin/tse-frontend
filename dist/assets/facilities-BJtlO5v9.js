@@ -1,0 +1,1 @@
+import{au as t,aK as i,av as s}from"./index--ClWZahu.js";import{a as o}from"./facility-CsGiLvNK.js";async function c(){const a=await t.get("facilities/utils/options");return i.array().parse(s.parse(a.data).data)}async function p(a){const e=await t.get(`facilities/${a}/coordinates`);return o.parse(s.parse(e.data).data)}export{c as a,p as g};
