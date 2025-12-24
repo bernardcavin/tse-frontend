@@ -74,6 +74,12 @@ export const MANAGER_MENUS: SideLink[] = [
     href: paths.manager.contacts,
     icon: icons.contacts,
   },
+  {
+    title: 'IT Tickets',
+    label: 'IT Tickets',
+    href: paths.manager.itTickets,
+    icon: icons.ticket,
+  },
 ];
 
 // Employee menus
@@ -89,12 +95,6 @@ export const EMPLOYEE_MENUS: SideLink[] = [
     label: 'Inventory',
     href: paths.employee.inventory,
     icon: icons.inventory,
-  },
-  {
-    title: 'Facilities',
-    label: 'Facilities',
-    href: paths.employee.facilities,
-    icon: icons.facilities,
   },
   {
     title: 'Attendance',
@@ -114,6 +114,12 @@ export const EMPLOYEE_MENUS: SideLink[] = [
     href: paths.employee.contacts,
     icon: icons.contacts,
   },
+  {
+    title: 'IT Tickets',
+    label: 'IT Tickets',
+    href: paths.employee.itTickets,
+    icon: icons.ticket,
+  },
 ];
 
 /**
@@ -123,7 +129,11 @@ export function getMenusForRole(userRole: string, userDepartment?: string | null
   if (userRole === 'MANAGER') {
     return MANAGER_MENUS;
   } else if (userRole === 'EMPLOYEE') {
-    // All employees can see and report Hazard Observations
+    // HR and Finance employees can see manager menus (with read-only access)
+    if (userDepartment === 'HR' || userDepartment === 'Finance') {
+      return MANAGER_MENUS;
+    }
+    // All other employees see employee menus
     return EMPLOYEE_MENUS;
   }
   return [];

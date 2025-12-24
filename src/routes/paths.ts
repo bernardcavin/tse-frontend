@@ -21,6 +21,8 @@ export const paths = {
     attendanceManagement: '/manager/attendance/management',
     hazardObservations: '/manager/hazard-observations',
     contacts: '/manager/contacts',
+    itTickets: '/manager/it-tickets',
+    profile: '/manager/profile',
   },
   employee: {
     root: '/employee',
@@ -30,5 +32,7 @@ export const paths = {
     attendance: '/employee/attendance',
     hazardObservations: '/employee/hazard-observations',
     contacts: '/employee/contacts',
+    itTickets: '/employee/it-tickets',
+    profile: '/employee/profile',
   },
 };

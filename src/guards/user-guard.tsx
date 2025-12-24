@@ -21,10 +21,16 @@ type Role = z.infer<typeof User>['role'];
 function resolveRedirect(
   currentPath: string,
   role: Role,
+  department: string | null | undefined,
   redirectPath: string | null
 ): string | null {
-  const basePath = role === 'MANAGER' ? paths.manager.root : paths.employee.root;
-  const homePath = role === 'MANAGER' ? paths.manager.home : paths.employee.home;
+  // HR and Finance employees should use manager paths
+  const shouldUseManagerPaths = 
+    role === 'MANAGER' || 
+    (role === 'EMPLOYEE' && (department === 'HR' || department === 'Finance'));
+  
+  const basePath = shouldUseManagerPaths ? paths.manager.root : paths.employee.root;
+  const homePath = shouldUseManagerPaths ? paths.manager.home : paths.employee.home;
   
   const isValidRedirect = redirectPath?.startsWith(basePath);
   const alreadyOnCorrectPath = currentPath.startsWith(basePath);
@@ -47,10 +53,10 @@ export function UserGuard({ children }: UserGuardProps) {
 
   if (isAuthenticated && user?.role) {
     const redirectPath = getRedirectPath(search);
-    const correctedPath = resolveRedirect(pathname, user.role, redirectPath);
+    const correctedPath = resolveRedirect(pathname, user.role, user.department, redirectPath);
 
     if (correctedPath && pathname !== correctedPath) {
-      console.log(`[UserGuard] Redirecting ${user.username} (${user.role}) from ${pathname} to ${correctedPath}`);
+      console.log(`[UserGuard] Redirecting ${user.username} (${user.role}, ${user.department}) from ${pathname} to ${correctedPath}`);
       return <Navigate to={correctedPath} replace />;
     }
   }

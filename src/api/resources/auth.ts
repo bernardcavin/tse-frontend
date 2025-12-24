@@ -1,7 +1,7 @@
 import { BackendResponse } from '@/api/entities';
 import { app } from '@/config';
 import { client } from '../axios';
-import { CreateEmployee, UpdateEmployee, User } from '../entities/auth';
+import { CreateEmployee, UpdateEmployee, UpdateProfile, User } from '../entities/auth';
 
 
 export async function getAccountInfo() {
@@ -39,4 +39,10 @@ export async function updateEmployee(
 export async function deleteEmployee(id: string) {
   const response = await client.delete(`auth/employees/${id}`);
   return BackendResponse.parse(response.data);
+}
+
+// Profile Update API
+export async function updateProfile(profile: ReturnType<typeof UpdateProfile.parse>) {
+  const response = await client.put('auth/profile', profile);
+  return User.parse(BackendResponse.parse(response.data).data);
 }

@@ -28,7 +28,7 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core';
-import { DatePickerInput, TimeInput } from '@mantine/dates';
+import { DatePickerInput, TimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { IconCheck, IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
@@ -134,10 +134,12 @@ export function HazardObservationForm({ form }: HazardObservationFormProps) {
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 3 }}>
-            <TimeInput
+            <TimePicker
               label="Observation Time"
               {...form.getInputProps('observation_time')}
               required
+              format='24h'
+              
             />
           </Grid.Col>
         </Grid>

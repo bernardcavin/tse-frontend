@@ -2,6 +2,7 @@ import { AttendanceLocation } from '@/api/entities/attendance';
 import { usePagination } from '@/api/helpers';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
+import { useAuth } from '@/hooks';
 import {
     useDeleteAttendanceLocation,
     useGetAttendanceLocations,
@@ -27,10 +28,14 @@ type SortableFields = Pick<
 >;
 
 export function AttendanceLocationsTable() {
+  const { user } = useAuth();
   const { page, limit, setLimit, setPage } = usePagination();
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [selectedQRCode, setSelectedQRCode] = useState<string | null>(null);
   const [selectedLocationName, setSelectedLocationName] = useState<string>('');
+
+  // Only managers can modify attendance locations
+  const canModifyLocations = user?.role === 'MANAGER';
 
   const { filters, sort } = DataTable.useDataTable<SortableFields>({
     sortConfig: {
@@ -136,13 +141,13 @@ export function AttendanceLocationsTable() {
         render: (row: any) => (
           <DataTable.Actions
             onView={() => openAttendanceLocationView(row.id)}
-            onEdit={() => openAttendanceLocationEdit(row.id, refetch)}
-            onDelete={() => handleDelete(row.id)}
+            onEdit={canModifyLocations ? () => openAttendanceLocationEdit(row.id, refetch) : undefined}
+            onDelete={canModifyLocations ? () => handleDelete(row.id) : undefined}
           />
         ),
       },
     ],
-    [handleDelete]
+    [handleDelete, canModifyLocations]
   );
 
   const Icon = icons.building;
@@ -154,13 +159,15 @@ export function AttendanceLocationsTable() {
           icon={<Icon size={25} />}
           title="Attendance Locations"
           actions={
-            <AddButton
-              variant="default"
-              size="xs"
-              onClick={() => openAttendanceLocationCreate(refetch)}
-            >
-              Add Location
-            </AddButton>
+            canModifyLocations ? (
+              <AddButton
+                variant="default"
+                size="xs"
+                onClick={() => openAttendanceLocationCreate(refetch)}
+              >
+                Add Location
+              </AddButton>
+            ) : undefined
           }
         />
         <DataTable.Filters filters={filters.filters} onClear={filters.clear} />

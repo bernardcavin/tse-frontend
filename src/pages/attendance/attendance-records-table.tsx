@@ -30,6 +30,17 @@ export function AttendanceRecordsTable() {
     },
   });
 
+  const formatDateTime24Hour = (date: Date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
   const calculateDuration = (checkIn: Date, checkOut: Date | null) => {
     if (!checkOut) return 'In progress';
     
@@ -59,14 +70,14 @@ export function AttendanceRecordsTable() {
         accessor: 'check_in_time',
         title: 'Check In',
         sortable: true,
-        render: ({ check_in_time }) => new Date(check_in_time).toLocaleString(),
+        render: ({ check_in_time }) => formatDateTime24Hour(check_in_time),
       },
       {
         accessor: 'check_out_time',
         title: 'Check Out',
         sortable: true,
         render: ({ check_out_time }) =>
-          check_out_time ? new Date(check_out_time).toLocaleString() : '-',
+          check_out_time ? formatDateTime24Hour(check_out_time) : '-',
       },
       {
         accessor: 'duration',

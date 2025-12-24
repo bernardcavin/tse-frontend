@@ -1,11 +1,12 @@
-import { IconType } from 'react-icons';
-import { BsPerson, BsPlus } from 'react-icons/bs';
-import { GiCalendar } from 'react-icons/gi';
-import { Box, SimpleGrid, Text, UnstyledButton } from '@mantine/core';
 import { Page } from '@/components/page';
+import { openContactCreate } from '@/pages/contacts/contacts-modals';
 import { openFacilityCreate } from '@/pages/facilities/facilities-modals';
+import { openHazardObservationCreate } from '@/pages/hazard-observations/hazard-observations-modals';
 import { openInventoryCreate } from '@/pages/inventory/inventory-modals';
+import { openITTicketCreate } from '@/pages/it-tickets/it-tickets-modals';
 import { icons } from '@/utilities/icons';
+import { Box, SimpleGrid, Text, UnstyledButton } from '@mantine/core';
+import { IconType } from 'react-icons';
 
 type HomeActions = {
   label: string;
@@ -31,20 +32,27 @@ export default function HomePage() {
       colorStart: 'var(--mantine-color-violet-6)',
       colorEnd: 'var(--mantine-color-violet-7)',
     },
-    // {
-    //   label: 'View Schedule',
-    //   Icon: GiCalendar,
-    //   onClick: () => {},
-    //   colorStart: 'var(--mantine-color-green-6)',
-    //   colorEnd: 'var(--mantine-color-green-7)',
-    // },
-    // {
-    //   label: 'Quick Actions',
-    //   Icon: BsPlus,
-    //   onClick: () => {},
-    //   colorStart: 'var(--mantine-color-orange-6)',
-    //   colorEnd: 'var(--mantine-color-orange-7)',
-    // },
+    {
+      label: 'New Hazard Observation',
+      Icon: icons.alert,
+      onClick: () => openHazardObservationCreate(() => {}),
+      colorStart: 'var(--mantine-color-red-6)',
+      colorEnd: 'var(--mantine-color-red-7)',
+    },
+    {
+      label: 'New IT Ticket',
+      Icon: icons.ticket,
+      onClick: () => openITTicketCreate(() => {}),
+      colorStart: 'var(--mantine-color-indigo-6)',
+      colorEnd: 'var(--mantine-color-indigo-7)',
+    },
+    {
+      label: 'New Contact',
+      Icon: icons.contacts,
+      onClick: () => openContactCreate(() => {}),
+      colorStart: 'var(--mantine-color-teal-6)',
+      colorEnd: 'var(--mantine-color-teal-7)',
+    },
   ];
 
   return (

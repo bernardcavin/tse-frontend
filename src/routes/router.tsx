@@ -114,6 +114,18 @@ const router = createBrowserRouter([
         path: paths.manager.contacts,
         element: LazyPage(() => import('@/pages/contacts')),
       },
+
+      /* ------------------------------- IT TICKETS ------------------------------- */
+      {
+        path: paths.manager.itTickets,
+        element: LazyPage(() => import('@/pages/it-tickets')),
+      },
+
+      /* ------------------------------- PROFILE ------------------------------- */
+      {
+        path: paths.manager.profile,
+        element: LazyPage(() => import('@/pages/profile')),
+      },
     ],
   },
 
@@ -148,12 +160,6 @@ const router = createBrowserRouter([
         element: LazyPage(() => import('@/pages/inventory')),
       },
 
-      /* ------------------------------- FACILITIES ------------------------------- */
-      {
-        path: paths.employee.facilities,
-        element: LazyPage(() => import('@/pages/facilities')),
-      },
-
       /* ------------------------------- ATTENDANCE ------------------------------- */
       {
         path: paths.employee.attendance,
@@ -170,6 +176,18 @@ const router = createBrowserRouter([
       {
         path: paths.employee.contacts,
         element: LazyPage(() => import('@/pages/contacts')),
+      },
+
+      /* ------------------------------- IT TICKETS ------------------------------- */
+      {
+        path: paths.employee.itTickets,
+        element: LazyPage(() => import('@/pages/it-tickets')),
+      },
+
+      /* ------------------------------- PROFILE ------------------------------- */
+      {
+        path: paths.employee.profile,
+        element: LazyPage(() => import('@/pages/profile')),
       },
     ],
   },

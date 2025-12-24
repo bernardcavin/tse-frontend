@@ -22,6 +22,9 @@ export function EmployeeTable() {
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const { page, limit, setLimit, setPage } = usePagination();
+
+  // Check if user can modify employees (only managers can edit/delete)
+  const canModifyEmployees = currentUser?.role === 'MANAGER';
   const { filters, sort } = DataTable.useDataTable<SortableFields>({
     sortConfig: {
       direction: 'asc',
@@ -113,9 +116,11 @@ export function EmployeeTable() {
         render: (row: any) => (
           <DataTable.Actions
             onView={() => navigate(paths.manager.employeeDetail(row.id))}
-            onEdit={() => openEmployeeEdit(row.id, refetch)}
+            onEdit={canModifyEmployees ? () => openEmployeeEdit(row.id, refetch) : undefined}
             onDelete={
-              row.id !== currentUser?.id ? () => handleDelete(row.id) : undefined // Prevent deleting yourself
+              canModifyEmployees && row.id !== currentUser?.id 
+                ? () => handleDelete(row.id) 
+                : undefined // HR/Finance cannot delete, and prevent deleting yourself
             }
           />
         ),
@@ -132,9 +137,11 @@ export function EmployeeTable() {
         icon={<Icon size={25} />}
         title="Employees"
         actions={
-          <AddButton variant="default" size="xs" onClick={() => openEmployeeCreate(refetch)}>
-            Add Employee
-          </AddButton>
+          canModifyEmployees ? (
+            <AddButton variant="default" size="xs" onClick={() => openEmployeeCreate(refetch)}>
+              Add Employee
+            </AddButton>
+          ) : undefined
         }
       />
       <DataTable.Filters filters={filters.filters} onClear={filters.clear} />

@@ -50,3 +50,16 @@ export const UpdateEmployee = z.object({
   password: z.string().optional().nullable(),
   role: z.string().optional().nullable(),
 });
+
+// Profile Update Schema (personal data only, no employment info)
+export const UpdateProfile = z.object({
+  username: z.string().optional().nullable(),
+  name: z.string().optional().nullable(),
+  nik: z.string().optional().nullable(),
+  email: z.string().email().optional().nullable().or(z.literal('')),
+  phone_number: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  emergency_contact_name: z.string().optional().nullable(),
+  emergency_contact_phone: z.string().optional().nullable(),
+  password: z.string().optional().nullable(),
+});
