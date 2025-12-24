@@ -26,7 +26,6 @@ export const UnsafeReason = z.enum([
   'lack_of_knowledge', // Kurangnya Pengetahuan
   'incorrect_ppe_use', // Penggunaan APD yang Tidak Tepat
   'procedure_violation', // Melanggar Prosedur
-  'no_loto_socialization', // Tidak ada Sosialisasi Lock Out Tag Out
   'other', // Lain-Lain
 ]);
 

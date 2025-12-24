@@ -1,14 +1,14 @@
 import {
-    HazardObservationCreate,
-    HazardObservationResolve,
-    HazardObservationUpdate
+  HazardObservationCreate,
+  HazardObservationResolve,
+  HazardObservationUpdate
 } from '@/api/entities/hazard-observations';
 import { getFacilityOptions } from '@/api/resources/facilities';
 import {
-    useCreateHazardObservation,
-    useHazardObservation,
-    useResolveHazardObservation,
-    useUpdateHazardObservation,
+  useCreateHazardObservation,
+  useHazardObservation,
+  useResolveHazardObservation,
+  useUpdateHazardObservation,
 } from '@/api/resources/hazard-observations';
 import { FormSection } from '@/components/form-section';
 import { ImageUpload } from '@/components/forms/file-upload';
@@ -17,16 +17,16 @@ import { FormProvider } from '@/components/forms/form-provider';
 import { normalizeDate } from '@/utilities/date';
 import { handleFormErrors } from '@/utilities/form';
 import {
-    Button,
-    Checkbox,
-    Grid,
-    Group,
-    Loader,
-    Select,
-    Stack,
-    Text,
-    Textarea,
-    TextInput,
+  Button,
+  Checkbox,
+  Grid,
+  Group,
+  Loader,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
 } from '@mantine/core';
 import { DatePickerInput, TimeInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
@@ -57,7 +57,6 @@ const UNSAFE_REASONS = [
   { value: 'lack_of_knowledge', label: 'Lack of Knowledge (Kurang Pengetahuan)' },
   { value: 'incorrect_ppe_use', label: 'Incorrect PPE Use (Penggunaan APD Tidak Tepat)' },
   { value: 'procedure_violation', label: 'Procedure Violation (Melanggar Prosedur)' },
-  { value: 'no_loto_socialization', label: 'No LOTO Socialization (Tidak ada Sosialisasi LOTO)' },
   { value: 'other', label: 'Other (Lain-Lain)' },
 ];
 
