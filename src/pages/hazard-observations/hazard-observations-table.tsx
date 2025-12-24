@@ -232,7 +232,7 @@ export function HazardObservationsTable() {
           <DataTable.Actions
             onView={() => openHazardObservationView(row.id!)}
             onResolve={
-              isHSE && row.status !== 'resolved' && row.status !== 'closed'
+              (isHSE || isManager) && row.status !== 'resolved' && row.status !== 'closed'
                 ? () => openHazardObservationResolve(row.id!, refetch)
                 : null
             }
