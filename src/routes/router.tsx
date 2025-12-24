@@ -108,6 +108,12 @@ const router = createBrowserRouter([
         path: paths.manager.hazardObservations,
         element: LazyPage(() => import('@/pages/hazard-observations')),
       },
+
+      /* ------------------------------- CONTACTS ------------------------------- */
+      {
+        path: paths.manager.contacts,
+        element: LazyPage(() => import('@/pages/contacts')),
+      },
     ],
   },
 
@@ -158,6 +164,12 @@ const router = createBrowserRouter([
       {
         path: paths.employee.hazardObservations,
         element: LazyPage(() => import('@/pages/hazard-observations')),
+      },
+
+      /* ------------------------------- CONTACTS ------------------------------- */
+      {
+        path: paths.employee.contacts,
+        element: LazyPage(() => import('@/pages/contacts')),
       },
     ],
   },

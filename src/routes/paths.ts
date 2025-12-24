@@ -20,6 +20,7 @@ export const paths = {
     attendanceCheckIn: '/manager/attendance/check-in',
     attendanceManagement: '/manager/attendance/management',
     hazardObservations: '/manager/hazard-observations',
+    contacts: '/manager/contacts',
   },
   employee: {
     root: '/employee',
@@ -28,5 +29,6 @@ export const paths = {
     facilities: '/employee/facilities',
     attendance: '/employee/attendance',
     hazardObservations: '/employee/hazard-observations',
+    contacts: '/employee/contacts',
   },
 };

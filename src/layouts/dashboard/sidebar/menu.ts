@@ -68,6 +68,12 @@ export const MANAGER_MENUS: SideLink[] = [
     href: paths.manager.hazardObservations,
     icon: icons.alert,
   },
+  {
+    title: 'Contacts',
+    label: 'Contacts',
+    href: paths.manager.contacts,
+    icon: icons.contacts,
+  },
 ];
 
 // Employee menus
@@ -101,6 +107,12 @@ export const EMPLOYEE_MENUS: SideLink[] = [
     label: 'Hazard Observations',
     href: paths.employee.hazardObservations,
     icon: icons.alert,
+  },
+  {
+    title: 'Contacts',
+    label: 'Contacts',
+    href: paths.employee.contacts,
+    icon: icons.contacts,
   },
 ];
 

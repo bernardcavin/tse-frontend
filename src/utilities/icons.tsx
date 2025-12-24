@@ -1,13 +1,14 @@
 import {
-    BsBoxFill,
-    BsBuilding,
-    BsBuildingFillGear,
-    BsClock,
-    BsExclamationCircle,
-    BsGear,
-    BsPeopleFill,
-    BsQrCode,
-    BsTools
+  BsBoxFill,
+  BsBuilding,
+  BsBuildingFillGear,
+  BsClockFill,
+  BsExclamationTriangleFill,
+  BsGear,
+  BsPeopleFill,
+  BsPersonVcard,
+  BsQrCode,
+  BsTools
 } from 'react-icons/bs';
 
 export const icons = {
@@ -15,11 +16,12 @@ export const icons = {
   facilities: BsBuildingFillGear,
   dashboard: BsBoxFill,
   users: BsPeopleFill,
-  clock: BsClock,
+  clock: BsClockFill,
   building: BsBuilding,
-  alert: BsExclamationCircle,
+  alert: BsExclamationTriangleFill,
   qrCode: BsQrCode,
   settings: BsGear,
+  contacts: BsPersonVcard,
 };
 
 export function DataIcon({ label }: { label: keyof typeof icons }) {
