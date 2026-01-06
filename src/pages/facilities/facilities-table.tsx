@@ -1,20 +1,16 @@
-import { useCallback, useMemo } from 'react';
-import { DataTableColumn } from 'mantine-datatable';
-import z from 'zod';
-import { Avatar, Group, Loader, Text, Title } from '@mantine/core';
-import { modals } from '@mantine/modals';
 import { Facility } from '@/api/entities/facility';
 import { usePagination } from '@/api/helpers';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
 import { MultipleImageAttachment } from '@/components/image-attachment';
-import { ActiveBadge } from '@/components/resources/active-badge';
-import { app } from '@/config';
 import { useDeleteFacility, useGetfacilities } from '@/hooks/api/facilities';
-import { formatDateReadable } from '@/utilities/date';
 import { icons } from '@/utilities/icons';
-import { formatCurrency } from '@/utilities/number';
 import { titlize } from '@/utilities/text';
+import { Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { DataTableColumn } from 'mantine-datatable';
+import { useCallback, useMemo } from 'react';
+import z from 'zod';
 import { openFacilityCreate, openFacilityEdit, openFacilityView } from './facilities-modals';
 
 type FacilityType = z.infer<typeof Facility>;

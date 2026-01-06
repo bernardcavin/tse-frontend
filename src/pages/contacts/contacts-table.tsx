@@ -4,6 +4,7 @@ import { ContactType, formatRegional } from '@/api/entities/contact';
 import { usePagination } from '@/api/helpers';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
+import { useAuth } from '@/hooks';
 import { useDeleteContact, useGetContacts } from '@/hooks/api/contacts';
 import { icons } from '@/utilities/icons';
 import { Button, Group, Select, TextInput } from '@mantine/core';
@@ -72,6 +73,8 @@ function downloadCSV(data: Array<Record<string, string>>, filename: string) {
 }
 
 export function ContactsTable() {
+  const { user } = useAuth();
+  const isManager = user?.role === 'MANAGER';
   const { page, limit, setLimit, setPage } = usePagination();
   const { filters, sort } = DataTable.useDataTable<SortableFields>({
     sortConfig: {
@@ -341,7 +344,7 @@ export function ContactsTable() {
           <DataTable.Actions
             onView={() => openContactView(row.id)}
             onEdit={() => openContactEdit(row.id, refetch)}
-            onDelete={() => handleDelete(row.id)}
+            onDelete={isManager ? () => handleDelete(row.id) : undefined}
           />
         ),
       },
