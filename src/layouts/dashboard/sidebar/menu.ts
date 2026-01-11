@@ -69,6 +69,12 @@ export const MANAGER_MENUS: SideLink[] = [
     icon: icons.alert,
   },
   {
+    title: 'Housekeeping',
+    label: 'Housekeeping',
+    href: paths.manager.housekeeping,
+    icon: icons.clipboardCheck,
+  },
+  {
     title: 'Contacts',
     label: 'Contacts',
     href: paths.manager.contacts,
@@ -79,6 +85,18 @@ export const MANAGER_MENUS: SideLink[] = [
     label: 'IT Tickets',
     href: paths.manager.itTickets,
     icon: icons.ticket,
+  },
+  {
+    title: 'Expeditions',
+    label: 'Expeditions',
+    href: paths.manager.expeditions,
+    icon: icons.truck,
+  },
+  {
+    title: 'Requests',
+    label: 'Requests',
+    href: paths.manager.requests,
+    icon: icons.fileText,
   },
 ];
 
@@ -120,6 +138,18 @@ export const EMPLOYEE_MENUS: SideLink[] = [
     href: paths.employee.itTickets,
     icon: icons.ticket,
   },
+  {
+    title: 'Expeditions',
+    label: 'Expeditions',
+    href: paths.employee.expeditions,
+    icon: icons.truck,
+  },
+  {
+    title: 'Requests',
+    label: 'Requests',
+    href: paths.employee.requests,
+    icon: icons.fileText,
+  },
 ];
 
 /**
@@ -133,6 +163,23 @@ export function getMenusForRole(userRole: string, userDepartment?: string | null
     if (userDepartment === 'HR' || userDepartment === 'Finance') {
       return MANAGER_MENUS;
     }
+    
+    // HSE employees get housekeeping menu added
+    if (userDepartment === 'HSE') {
+      const hseMenus: SideLink[] = [...EMPLOYEE_MENUS];
+      // Add housekeeping after hazard observations
+      const hazardIndex = hseMenus.findIndex(m => m.href === paths.employee.hazardObservations);
+      if (hazardIndex !== -1) {
+        hseMenus.splice(hazardIndex + 1, 0, {
+          title: 'Housekeeping',
+          label: 'Housekeeping',
+          href: paths.employee.housekeeping,
+          icon: icons.clipboardCheck,
+        });
+      }
+      return hseMenus;
+    }
+    
     // All other employees see employee menus
     return EMPLOYEE_MENUS;
   }

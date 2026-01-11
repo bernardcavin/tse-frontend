@@ -2,15 +2,18 @@ import {
     BsBoxFill,
     BsBuilding,
     BsBuildingFillGear,
+    BsClipboardCheck,
     BsClockFill,
     BsExclamationTriangleFill,
+    BsFileText,
     BsGear,
     BsPeopleFill,
     BsPerson,
     BsPersonVcard,
     BsQrCode,
     BsTicketDetailed,
-    BsTools
+    BsTools,
+    BsTruck
 } from 'react-icons/bs';
 
 export const icons = {
@@ -26,6 +29,9 @@ export const icons = {
   settings: BsGear,
   contacts: BsPersonVcard,
   ticket: BsTicketDetailed,
+  truck: BsTruck,
+  fileText: BsFileText,
+  clipboardCheck: BsClipboardCheck,
 };
 
 export function DataIcon({ label }: { label: keyof typeof icons }) {

@@ -109,6 +109,12 @@ const router = createBrowserRouter([
         element: LazyPage(() => import('@/pages/hazard-observations')),
       },
 
+      /* ------------------------------- HOUSEKEEPING ------------------------------- */
+      {
+        path: paths.manager.housekeeping,
+        element: LazyPage(() => import('@/pages/housekeeping')),
+      },
+
       /* ------------------------------- CONTACTS ------------------------------- */
       {
         path: paths.manager.contacts,
@@ -119,6 +125,18 @@ const router = createBrowserRouter([
       {
         path: paths.manager.itTickets,
         element: LazyPage(() => import('@/pages/it-tickets')),
+      },
+
+      /* ------------------------------- EXPEDITIONS ------------------------------- */
+      {
+        path: paths.manager.expeditions,
+        element: LazyPage(() => import('@/pages/expeditions')),
+      },
+
+      /* ------------------------------- REQUESTS ------------------------------- */
+      {
+        path: paths.manager.requests,
+        element: LazyPage(() => import('@/pages/requests/requests-view').then(m => ({ default: m.RequestsView }))),
       },
 
       /* ------------------------------- PROFILE ------------------------------- */
@@ -172,6 +190,12 @@ const router = createBrowserRouter([
         element: LazyPage(() => import('@/pages/hazard-observations')),
       },
 
+      /* ------------------------------- HOUSEKEEPING ------------------------------- */
+      {
+        path: paths.employee.housekeeping,
+        element: LazyPage(() => import('@/pages/housekeeping')),
+      },
+
       /* ------------------------------- CONTACTS ------------------------------- */
       {
         path: paths.employee.contacts,
@@ -182,6 +206,18 @@ const router = createBrowserRouter([
       {
         path: paths.employee.itTickets,
         element: LazyPage(() => import('@/pages/it-tickets')),
+      },
+
+      /* ------------------------------- EXPEDITIONS ------------------------------- */
+      {
+        path: paths.employee.expeditions,
+        element: LazyPage(() => import('@/pages/expeditions')),
+      },
+
+      /* ------------------------------- REQUESTS ------------------------------- */
+      {
+        path: paths.employee.requests,
+        element: LazyPage(() => import('@/pages/requests/requests-view').then(m => ({ default: m.RequestsView }))),
       },
 
       /* ------------------------------- PROFILE ------------------------------- */

@@ -1,19 +1,16 @@
-import { forwardRef, useState } from 'react';
 import {
   Anchor,
   Collapse,
   Fieldset,
   FieldsetProps,
-  Checkbox as MantineCheckbox,
-  CheckboxProps as MantineCheckboxProps,
   Stack,
-  Text,
-  Title,
+  Text
 } from '@mantine/core';
+import { forwardRef, ReactNode, useState } from 'react';
 
-export interface FormSectionProps extends FieldsetProps {
+export interface FormSectionProps extends Omit<FieldsetProps, "title"> {
   id?: string;
-  title?: string;
+  title?: ReactNode;
   withHide?: boolean;
   defaultHidden?: boolean;
 }
