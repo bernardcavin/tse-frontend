@@ -7,9 +7,9 @@ import { Switch } from '@/components/forms/switch';
 import { Textarea } from '@/components/forms/text-area';
 import { TextInput } from '@/components/forms/text-input';
 import {
-  useCreateAttendanceLocation,
-  useGetAttendanceLocation,
-  useUpdateAttendanceLocation,
+    useCreateAttendanceLocation,
+    useGetAttendanceLocation,
+    useUpdateAttendanceLocation,
 } from '@/hooks/api/attendance';
 import { handleFormErrors } from '@/utilities/form';
 import { Button, Grid, Group, Loader, Select as MantineSelect, Stack, Text } from '@mantine/core';
@@ -209,6 +209,15 @@ export function AttendanceLocationForm({ form }: AttendanceLocationFormProps) {
                 max={10000}
               />
             </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 4 }}>
+              <TextInput
+                name="attendance_max_time"
+                label="Max Attendance Time"
+                placeholder="e.g. 18:00:00"
+                description="Auto-checkout time (HH:MM:SS)"
+                type="time"
+              />
+            </Grid.Col>
           </Grid>
         </Stack>
       </FormSection>
@@ -233,6 +242,7 @@ export function CreateAttendanceLocationForm({ onSubmit }: LocationFormProps) {
       latitude: -6.2088,
       longitude: 106.8456,
       radius_meters: 100,
+      attendance_max_time: '',
       is_active: true,
     },
   });

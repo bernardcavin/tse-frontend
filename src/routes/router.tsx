@@ -183,6 +183,10 @@ const router = createBrowserRouter([
         path: paths.employee.attendance,
         element: LazyPage(() => import('@/pages/attendance/employee')),
       },
+      {
+        path: paths.employee.attendanceHistory,
+        element: LazyPage(() => import('@/pages/attendance/employee/my-attendance')),
+      },
 
       /* ------------------------------- HAZARD OBSERVATIONS ------------------------------- */
       {

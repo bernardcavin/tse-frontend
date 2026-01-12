@@ -35,6 +35,7 @@ export const paths = {
     inventory: '/employee/inventory',
     facilities: '/employee/facilities',
     attendance: '/employee/attendance',
+    attendanceHistory: '/employee/attendance/history',
     safetyObservations: '/employee/safety-observations',
     housekeeping: '/employee/housekeeping',
     contacts: '/employee/contacts',

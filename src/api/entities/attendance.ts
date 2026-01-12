@@ -10,6 +10,7 @@ export const AttendanceLocation = z.object({
   latitude: z.number(),
   longitude: z.number(),
   radius_meters: z.number().int().min(1).max(10000).default(100),
+  attendance_max_time: z.string().optional().nullable(),
   qr_code_data: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
   created_by_id: z.string().uuid().optional().nullable(),

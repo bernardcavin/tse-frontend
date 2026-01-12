@@ -12,7 +12,11 @@ type AttendanceRecordType = z.infer<typeof AttendanceRecord>;
 
 type SortableFields = Pick<AttendanceRecordType, 'check_in_time' | 'check_out_time'>;
 
-export function AttendanceRecordsTable() {
+interface AttendanceRecordsTableProps {
+  userId?: string;
+}
+
+export function AttendanceRecordsTable({ userId }: AttendanceRecordsTableProps) {
   const { page, limit, setLimit, setPage } = usePagination();
 
   const { filters, sort } = DataTable.useDataTable<SortableFields>({
@@ -27,6 +31,7 @@ export function AttendanceRecordsTable() {
       page,
       limit,
       sort: sort.query,
+      user_id: userId,
     },
   });
 

@@ -1,4 +1,5 @@
 import { useCheckIn, useCheckOut, useGetAttendanceStatus } from '@/hooks/api/attendance';
+import { paths } from '@/routes';
 import {
     Alert,
     Badge,
@@ -139,8 +140,35 @@ export function EmployeeCheckIn() {
               </Text>
             </Group>
           )}
+          <Button 
+            variant="light" 
+            size="xs" 
+            onClick={() => {
+              setLocation(null);
+              setLocationError(null);
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  setLocation({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                  });
+                },
+                (error) => {
+                  setLocationError('Unable to get your location. Please enable location services.');
+                }
+              );
+            }}
+          >
+            Refresh Location
+          </Button>
         </Stack>
       </Card>
+
+      <Group justify="flex-end">
+        <Button component="a" href={paths.employee.attendanceHistory} variant="outline">
+          View My Attendance History
+        </Button>
+      </Group>
 
       {/* Attendance Status */}
       <Card shadow="sm" padding="lg">
