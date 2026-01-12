@@ -1,26 +1,26 @@
-import { useHazardAnalytics } from '@/api/resources/hazard-observations';
+import { useSafetyAnalytics } from '@/api/resources/safety-observations';
 import { useAuth } from '@/hooks';
 import { BarChart, LineChart, PieChart } from '@mantine/charts';
 import {
-  Card,
-  Center,
-  Grid,
-  Group,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
+    Card,
+    Center,
+    Grid,
+    Group,
+    SimpleGrid,
+    Stack,
+    Text,
+    Title,
 } from '@mantine/core';
 import {
-  IconAlertTriangle,
-  IconCheck,
-  IconClock,
-  IconFileAlert,
+    IconAlertTriangle,
+    IconCheck,
+    IconClock,
+    IconFileAlert,
 } from '@tabler/icons-react';
 
-export function HazardAnalytics() {
+export function SafetyAnalytics() {
   const { user } = useAuth();
-  const { data: analytics, isLoading } = useHazardAnalytics();
+  const { data: analytics, isLoading } = useSafetyAnalytics();
 
   // Only show analytics for managers and HSE employees
   if (user?.role !== 'MANAGER' && user?.department !== 'HSE') {
@@ -40,10 +40,10 @@ export function HazardAnalytics() {
     }))
     .filter((item) => item.value > 0);
 
-  // Prepare data for hazard types bar chart
-  const hazardTypesData = Object.entries(analytics.hazard_types_distribution || {})
+  // Prepare data for observation types bar chart
+  const observationTypesData = Object.entries(analytics.observation_types_distribution || {})
     .map(([name, value]) => ({
-      hazard: name.replace('_', ' '),
+      type: name.replace('_', ' '),
       count: value as number,
     }))
     .sort((a, b) => b.count - a.count)
@@ -141,16 +141,16 @@ export function HazardAnalytics() {
           </Card>
         </Grid.Col>
 
-        {/* Hazard Types Bar Chart */}
+        {/* Observation Types Bar Chart */}
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card padding="lg" radius="md" withBorder h="100%">
             <Stack gap="md">
-              <Title order={4}>Top Hazard Types</Title>
-              {hazardTypesData.length > 0 ? (
+              <Title order={4}>Top Observation Types</Title>
+              {observationTypesData.length > 0 ? (
                 <BarChart
                   h={280}
-                  data={hazardTypesData}
-                  dataKey="hazard"
+                  data={observationTypesData}
+                  dataKey="type"
                   series={[{ name: 'count', color: 'blue.6', label: 'Count' }]}
                   tickLine="y"
                   gridAxis="y"

@@ -105,8 +105,8 @@ const router = createBrowserRouter([
 
       /* ------------------------------- HAZARD OBSERVATIONS ------------------------------- */
       {
-        path: paths.manager.hazardObservations,
-        element: LazyPage(() => import('@/pages/hazard-observations')),
+        path: paths.manager.safetyObservations,
+        element: LazyPage(() => import('@/pages/safety-observations')),
       },
 
       /* ------------------------------- HOUSEKEEPING ------------------------------- */
@@ -186,8 +186,8 @@ const router = createBrowserRouter([
 
       /* ------------------------------- HAZARD OBSERVATIONS ------------------------------- */
       {
-        path: paths.employee.hazardObservations,
-        element: LazyPage(() => import('@/pages/hazard-observations')),
+        path: paths.employee.safetyObservations,
+        element: LazyPage(() => import('@/pages/safety-observations')),
       },
 
       /* ------------------------------- HOUSEKEEPING ------------------------------- */

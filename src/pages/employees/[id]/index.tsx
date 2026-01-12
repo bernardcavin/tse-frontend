@@ -1,10 +1,9 @@
-import { useHazardObservations } from '@/api/resources/hazard-observations';
-import { useITTickets } from '@/api/resources/it-tickets';
+import { useSafetyObservations } from '@/api/resources/safety-observations';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { useGetAttendanceRecords } from '@/hooks/api/attendance';
 import { useGetEmployees } from '@/hooks/api/employees';
-import { openHazardObservationView } from '@/pages/hazard-observations/hazard-observations-modals';
+import { openSafetyObservationView } from '@/pages/safety-observations/safety-observations-modals';
 import { paths } from '@/routes';
 import {
     Badge,
@@ -60,16 +59,16 @@ export default function EmployeeDetailPage() {
     end_date: attendanceDateRange[1] ? attendanceDateRange[1].toString() : undefined,
   }});
   
-  // Fetch hazard observations for this employee
-  const { data: hazardData, isLoading: hazardLoading } = useHazardObservations();
+  // Fetch safety observations for this employee
+  const { data: safetyData, isLoading: safetyLoading } = useSafetyObservations();
 
   // Fetch IT tickets
   const { data: ticketData, isLoading: ticketLoading } = useITTickets();
 
-  // Filter hazard observations by observer_id and date range on frontend
-  const employeeHazards = useMemo(() => {
-    if (!hazardData?.data) return [];
-    let filtered = hazardData.data.filter((obs: any) => obs.observer_id === id);
+  // Filter safety observations by observer_id and date range on frontend
+  const employeeObservations = useMemo(() => {
+    if (!safetyData?.data) return [];
+    let filtered = safetyData.data.filter((obs: any) => obs.observer_id === id);
     
     // Apply date filters if set
     if (hocDateRange[0]) {
@@ -84,7 +83,7 @@ export default function EmployeeDetailPage() {
     }
     
     return filtered;
-  }, [hazardData, id, hocDateRange]);
+  }, [safetyData, id, hocDateRange]);
 
   // Filter IT tickets by reporter_id and date range on frontend
   const employeeTickets = useMemo(() => {
@@ -148,9 +147,9 @@ export default function EmployeeDetailPage() {
 
   // Calculate statistics
   const totalAttendanceDays = attendanceData?.data?.length || 0;
-  const totalHOCs = employeeHazards.length;
-  const openHOCs = employeeHazards.filter((h: any) => h.status === 'open').length;
-  const resolvedHOCs = employeeHazards.filter((h: any) => h.status === 'resolved').length;
+  const totalObservations = employeeObservations.length;
+  const openObservations = employeeObservations.filter((h: any) => h.status === 'open').length;
+  const resolvedObservations = employeeObservations.filter((h: any) => h.status === 'resolved').length;
 
   const totalTickets = employeeTickets.length;
   const openTickets = employeeTickets.filter((t: any) => t.status === 'open').length;
@@ -189,8 +188,8 @@ export default function EmployeeDetailPage() {
     },
   ];
 
-  // Hazard observations columns
-  const hazardColumns = [
+  // Safety observations columns
+  const safetyColumns = [
     {
       accessor: 'observation_date' as const,
       title: 'Date',
@@ -202,7 +201,7 @@ export default function EmployeeDetailPage() {
       render: (record: any) => record.facility_name || record.facility_id,
     },
     {
-      accessor: 'unsafe_action_condition' as const,
+      accessor: 'observation_description' as const,
       title: 'Description',
       ellipsis: true,
     },
@@ -230,7 +229,7 @@ export default function EmployeeDetailPage() {
           size="xs"
           variant="subtle"
           leftSection={<IconEye size={14} />}
-          onClick={() => openHazardObservationView(record.id)}
+          onClick={() => openSafetyObservationView(record.id)}
         >
           View
         </Button>
@@ -365,8 +364,8 @@ export default function EmployeeDetailPage() {
             <Tabs.Tab value="attendance" leftSection={<IconClipboardList size={16} />}>
               Attendance
             </Tabs.Tab>
-            <Tabs.Tab value="hazards" leftSection={<IconFileAlert size={16} />}>
-              Hazard Observations
+            <Tabs.Tab value="safety-observations" leftSection={<IconFileAlert size={16} />}>
+              Safety Observations
             </Tabs.Tab>
             <Tabs.Tab value="tickets" leftSection={<IconTicket size={16} />}>
               IT Tickets
@@ -448,16 +447,16 @@ export default function EmployeeDetailPage() {
             </Stack>
           </Tabs.Panel>
 
-          {/* Hazard Observations Tab */}
-          <Tabs.Panel value="hazards" pt="lg">
+          {/* Safety Observations Tab */}
+          <Tabs.Panel value="safety-observations" pt="lg">
             <Stack gap="lg">
-              {/* Hazard Observation Metrics */}
+              {/* Safety Observation Metrics */}
               <SimpleGrid cols={{ base: 1, sm: 3 }}>
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Total HOCs</Text>
-                      <Text size="xl" fw={700}>{totalHOCs}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>Total Observations</Text>
+                      <Text size="xl" fw={700}>{totalObservations}</Text>
                     </Stack>
                     <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-violet-6)" />
                   </Group>
@@ -465,8 +464,8 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Open HOCs</Text>
-                      <Text size="xl" fw={700}>{openHOCs}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>Open Observations</Text>
+                      <Text size="xl" fw={700}>{openObservations}</Text>
                     </Stack>
                     <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-red-6)" />
                   </Group>
@@ -474,19 +473,19 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Resolved HOCs</Text>
-                      <Text size="xl" fw={700}>{resolvedHOCs}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>Resolved Observations</Text>
+                      <Text size="xl" fw={700}>{resolvedObservations}</Text>
                     </Stack>
                     <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-green-6)" />
                   </Group>
                 </Card>
               </SimpleGrid>
 
-              {/* Hazard Observations Table */}
+              {/* Safety Observations Table */}
               <Card padding="lg" radius="md" withBorder>
                 <Stack gap="md">
                   <Group justify="space-between">
-                    <Title order={4}>Hazard Observation Cards</Title>
+                    <Title order={4}>Safety Observation Cards</Title>
                     <Group gap="sm">
                       <DatePickerInput
                         type="range"
@@ -510,7 +509,7 @@ export default function EmployeeDetailPage() {
                       )}
                     </Group>
                   </Group>
-                  {hazardLoading ? (
+                  {safetyLoading ? (
                     <Group justify="center" py="xl">
                       <Loader />
                     </Group>
@@ -518,10 +517,10 @@ export default function EmployeeDetailPage() {
                     <DataTable
                       withTableBorder={false}
                       mih={200}
-                      columns={hazardColumns}
-                      records={employeeHazards}
-                      totalRecords={employeeHazards.length}
-                      fetching={hazardLoading}
+                      columns={safetyColumns}
+                      records={employeeObservations}
+                      totalRecords={employeeObservations.length}
+                      fetching={safetyLoading}
                       page={hocPage}
                       onPageChange={setHocPage}
                       recordsPerPage={PAGE_SIZE}

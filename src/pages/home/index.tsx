@@ -1,9 +1,9 @@
 import { Page } from '@/components/page';
 import { openContactCreate } from '@/pages/contacts/contacts-modals';
 import { openFacilityCreate } from '@/pages/facilities/facilities-modals';
-import { openHazardObservationCreate } from '@/pages/hazard-observations/hazard-observations-modals';
 import { openInventoryCreate } from '@/pages/inventory/inventory-modals';
 import { openITTicketCreate } from '@/pages/it-tickets/it-tickets-modals';
+import { openSafetyObservationCreate } from '@/pages/safety-observations/safety-observations-modals';
 import { icons } from '@/utilities/icons';
 import { Box, SimpleGrid, Text, UnstyledButton } from '@mantine/core';
 import { IconType } from 'react-icons';
@@ -33,9 +33,9 @@ export default function HomePage() {
       colorEnd: 'var(--mantine-color-violet-7)',
     },
     {
-      label: 'New Hazard Observation',
+      label: 'New Safety Observation',
       Icon: icons.alert,
-      onClick: () => openHazardObservationCreate(() => {}),
+      onClick: () => openSafetyObservationCreate(() => {}),
       colorStart: 'var(--mantine-color-red-6)',
       colorEnd: 'var(--mantine-color-red-7)',
     },

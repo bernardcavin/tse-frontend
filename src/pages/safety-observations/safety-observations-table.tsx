@@ -1,14 +1,14 @@
 import { client } from '@/api/axios';
 import { BackendResponse } from '@/api/entities';
 import {
-  HazardObservationType,
-  ObservationStatusType,
-} from '@/api/entities/hazard-observations';
+    ObservationStatusType,
+    SafetyObservationType,
+} from '@/api/entities/safety-observations';
 import { usePagination } from '@/api/helpers';
 import {
-  useDeleteHazardObservation,
-  useHazardObservations,
-} from '@/api/resources/hazard-observations';
+    useDeleteSafetyObservation,
+    useSafetyObservations,
+} from '@/api/resources/safety-observations';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
 import { useAuth } from '@/hooks';
@@ -20,11 +20,12 @@ import { IconDownload } from '@tabler/icons-react';
 import { DataTableColumn } from 'mantine-datatable';
 import { useCallback, useMemo, useState } from 'react';
 import {
-  openHazardObservationCreate,
-  openHazardObservationEdit,
-  openHazardObservationResolve,
-  openHazardObservationView,
-} from './hazard-observations-modals';
+    openSafetyObservationClose,
+    openSafetyObservationCreate,
+    openSafetyObservationEdit,
+    openSafetyObservationResolve,
+    openSafetyObservationView,
+} from './safety-observations-modals';
 
 const STATUS_COLORS: Record<ObservationStatusType, string> = {
   open: 'red',
@@ -41,13 +42,13 @@ const STATUS_LABELS: Record<ObservationStatusType, string> = {
 };
 
 type SortableFields = Pick<
-  HazardObservationType,
+  SafetyObservationType,
   'observation_date' | 'status'
 >;
 
 // Export data fetching function
 async function fetchExportData(): Promise<Array<Record<string, string>>> {
-  const response = await client.get('/hazard-observations/export/csv');
+  const response = await client.get('/safety-observations/export/csv');
   return BackendResponse.parse(response.data).data as Array<Record<string, string>>;
 }
 
@@ -59,21 +60,28 @@ function downloadCSV(data: Array<Record<string, string>>, filename: string) {
   const headerMap: Record<string, string> = {
     observation_date: 'Tanggal',
     observation_time: 'Waktu',
+    location_area: 'Lokasi/Area',
+    department_unit: 'Departemen/Unit',
     facility: 'Fasilitas',
     observer: 'Observer',
-    unsafe_action_condition: 'Kondisi Tidak Aman',
-    hazard_types: 'Tipe Bahaya',
-    potential_risks: 'Potensi Risiko',
-    potential_risk_other: 'Potensi Risiko Lainnya',
-    unsafe_reasons: 'Alasan Tidak Aman',
-    unsafe_reason_other: 'Alasan Lainnya',
-    control_measures: 'Tindakan Pengendalian',
-    control_measure_other: 'Tindakan Lainnya',
-    corrective_action: 'Tindakan Korektif',
+    contact_info: 'Kontak',
+    observation_types: 'Jenis Observasi',
+    observation_categories: 'Kategori Observasi',
+    category_other: 'Kategori Lainnya',
+    observation_description: 'Deskripsi Observasi',
+    potential_impacts: 'Dampak Potensial',
+    impact_explanation: 'Penjelasan Dampak',
+    suggested_corrective_action: 'Saran Perbaikan',
+    immediate_action_done: 'Tindakan Langsung',
+    immediate_action_description: 'Deskripsi Tindakan Langsung',
+    has_supporting_evidence: 'Bukti Pendukung',
     status: 'Status',
     resolved_by: 'Diselesaikan Oleh',
     resolved_at: 'Tanggal Penyelesaian',
     resolution_notes: 'Catatan Penyelesaian',
+    closed_by: 'Ditutup Oleh',
+    closed_at: 'Tanggal Penutupan',
+    close_reason: 'Alasan Penutupan',
   };
   
   const headers = Object.keys(data[0]);
@@ -103,7 +111,7 @@ function downloadCSV(data: Array<Record<string, string>>, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function HazardObservationsTable() {
+export function SafetyObservationsTable() {
   const { user } = useAuth();
   const { page, limit, setLimit, setPage } = usePagination();
 
@@ -116,15 +124,15 @@ export function HazardObservationsTable() {
 
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data, isLoading, refetch } = useHazardObservations();
+  const { data, isLoading, refetch } = useSafetyObservations();
 
-  const { mutate: deleteObservation } = useDeleteHazardObservation();
+  const { mutate: deleteObservation } = useDeleteSafetyObservation();
   
   const handleDelete = useCallback(
     (id: string) => {
       modals.openConfirmModal({
-        title: 'Delete Hazard Observation',
-        children: 'Are you sure you want to delete this hazard observation?',
+        title: 'Delete Safety Observation',
+        children: 'Are you sure you want to delete this observation?',
         confirmProps: { color: 'red' },
         labels: { confirm: 'Delete', cancel: 'Cancel' },
         onConfirm: () => {
@@ -148,7 +156,7 @@ export function HazardObservationsTable() {
       
       // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0];
-      const filename = `hazard_observations_${dateStr}.csv`;
+      const filename = `safety_observations_${dateStr}.csv`;
       
       downloadCSV(exportData, filename);
       
@@ -168,7 +176,7 @@ export function HazardObservationsTable() {
   const isHSE = user?.department === 'HSE';
   const isManager = user?.role === 'MANAGER';
 
-  const columns: DataTableColumn<HazardObservationType>[] = useMemo(
+  const columns: DataTableColumn<SafetyObservationType>[] = useMemo(
     () => [
       {
         accessor: 'observation_date',
@@ -180,31 +188,31 @@ export function HazardObservationsTable() {
         },
       },
       {
-        accessor: 'facility_id',
-        title: 'Facility',
+        accessor: 'location_area',
+        title: 'Location',
         ellipsis: true,
-        render: ({ facility_name, facility_id }) => facility_name || facility_id,
+        render: ({ location_area, facility_name }) => location_area || facility_name || '-',
       },
       {
-        accessor: 'unsafe_action_condition',
-        title: 'Unsafe Condition',
+        accessor: 'observation_description',
+        title: 'Description',
         ellipsis: true,
         width: 250,
       },
       {
-        accessor: 'hazard_types',
-        title: 'Hazard Types',
-        render: ({ hazard_types }) =>
-          hazard_types && hazard_types.length > 0 ? (
+        accessor: 'observation_categories',
+        title: 'Categories',
+        render: ({ observation_categories }) =>
+          observation_categories && observation_categories.length > 0 ? (
             <Group gap={4}>
-              {hazard_types.slice(0, 2).map((type, idx) => (
-                <Badge key={idx} size="sm" >
-                  {type}
+              {observation_categories.slice(0, 2).map((cat, idx) => (
+                <Badge key={idx} size="sm" color="blue">
+                  {cat}
                 </Badge>
               ))}
-              {hazard_types.length > 2 && (
+              {observation_categories.length > 2 && (
                 <Badge size="sm" variant="outline">
-                  +{hazard_types.length - 2}
+                  +{observation_categories.length - 2}
                 </Badge>
               )}
             </Group>
@@ -228,17 +236,22 @@ export function HazardObservationsTable() {
         title: 'Actions',
         textAlign: 'right',
         width: 180,
-        render: (row: HazardObservationType) => (
+        render: (row: SafetyObservationType) => (
           <DataTable.Actions
-            onView={() => openHazardObservationView(row.id!)}
+            onView={() => openSafetyObservationView(row.id!)}
             onResolve={
               (isHSE || isManager) && row.status !== 'resolved' && row.status !== 'closed'
-                ? () => openHazardObservationResolve(row.id!, refetch)
+                ? () => openSafetyObservationResolve(row.id!, refetch)
+                : null
+            }
+            onClose={
+              (isHSE || isManager) && row.status !== 'resolved' && row.status !== 'closed'
+                ? () => openSafetyObservationClose(row.id!, refetch)
                 : null
             }
             onEdit={
               isManager || row.observer_id === user?.id
-                ? () => openHazardObservationEdit(row.id!, refetch)
+                ? () => openSafetyObservationEdit(row.id!, refetch)
                 : null
             }
             onDelete={isManager ? () => handleDelete(row.id!) : null}
@@ -255,7 +268,7 @@ export function HazardObservationsTable() {
     <DataTable.Container>
       <DataTable.Title
         icon={<Icon size={25} />}
-        title="Hazard Observation Cards"
+        title="Safety Observation Cards"
         actions={
           <Group gap="xs">
             <Button
@@ -270,7 +283,7 @@ export function HazardObservationsTable() {
             <AddButton
               variant="default"
               size="xs"
-              onClick={() => openHazardObservationCreate(refetch)}
+              onClick={() => openSafetyObservationCreate(refetch)}
             >
               Add Observation
             </AddButton>
@@ -282,9 +295,9 @@ export function HazardObservationsTable() {
         <DataTable.Table
           striped
           minHeight={240}
-          noRecordsText={DataTable.noRecordsText('hazard observations')}
-          recordsPerPageLabel={DataTable.recordsPerPageLabel('hazard observations')}
-          paginationText={DataTable.paginationText('hazard observations')}
+          noRecordsText={DataTable.noRecordsText('safety observations')}
+          recordsPerPageLabel={DataTable.recordsPerPageLabel('safety observations')}
+          paginationText={DataTable.paginationText('safety observations')}
           page={page}
           records={data?.data ?? []}
           fetching={isLoading}
