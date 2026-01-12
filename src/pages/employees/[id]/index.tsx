@@ -1,3 +1,4 @@
+import { useITTickets } from '@/api/resources/it-tickets';
 import { useSafetyObservations } from '@/api/resources/safety-observations';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
@@ -6,27 +7,27 @@ import { useGetEmployees } from '@/hooks/api/employees';
 import { openSafetyObservationView } from '@/pages/safety-observations/safety-observations-modals';
 import { paths } from '@/routes';
 import {
-    Badge,
-    Button,
-    Card,
-    Grid,
-    Group,
-    Loader,
-    SimpleGrid,
-    Stack,
-    Tabs,
-    Text,
-    Title
+  Badge,
+  Button,
+  Card,
+  Grid,
+  Group,
+  Loader,
+  SimpleGrid,
+  Stack,
+  Tabs,
+  Text,
+  Title
 } from '@mantine/core';
 import { DatePickerInput, DateValue } from '@mantine/dates';
 import {
-    IconCalendar,
-    IconClipboardList,
-    IconEye,
-    IconFileAlert,
-    IconTicket,
-    IconUser,
-    IconX
+  IconCalendar,
+  IconClipboardList,
+  IconEye,
+  IconFileAlert,
+  IconTicket,
+  IconUser,
+  IconX
 } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
 import { useMemo, useState } from 'react';

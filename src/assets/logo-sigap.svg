@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3 {
+        fill: #fff;
+        fill-rule: evenodd;
+        opacity: 0.9;
+      }
+
+      .cls-1 {
+        filter: url(#filter);
+      }
+
+      .cls-3 {
+        filter: url(#filter-2);
+      }
+    </style>
+    <filter id="filter" x="139" y="0" width="795.031" height="541" filterUnits="userSpaceOnUse">
+      <feOffset result="offset" dx="-6.508" dy="14.617" in="SourceAlpha"/>
+      <feGaussianBlur result="blur"/>
+      <feFlood result="flood" flood-opacity="0.21"/>
+      <feComposite result="composite" operator="in" in2="blur"/>
+      <feBlend result="blend" in="SourceGraphic"/>
+    </filter>
+    <filter id="filter-2" x="58" y="474.281" width="795.125" height="540.719" filterUnits="userSpaceOnUse">
+      <feOffset result="offset" dx="-6.508" dy="14.617" in="SourceAlpha"/>
+      <feGaussianBlur result="blur"/>
+      <feFlood result="flood" flood-opacity="0.21"/>
+      <feComposite result="composite" operator="in" in2="blur"/>
+      <feBlend result="blend" in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <path id="Polygon_1" data-name="Polygon 1" class="cls-1" d="M910.888,363.753l-675.4,161.954L146.915,348.624,495.179,0l438.84,223.83Z"/>
+  <path id="Polygon_1_copy_2" data-name="Polygon 1 copy 2" class="cls-2" d="M859.814,309.141L405.06,834.64,230.011,742.359,310.227,255.9l486.965-73.98Z"/>
+  <path id="Polygon_1_copy" data-name="Polygon 1 copy" class="cls-3" d="M89.114,636.247l675.43-161.954,88.582,177.083L504.843,1000,65.981,776.17Z"/>
+</svg>

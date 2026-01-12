@@ -227,7 +227,7 @@ export function openRequestReject(id: string, refetch: () => void) {
     const form = useForm({
       initialValues: { rejection_reason: '' },
       validate: {
-        rejection_reason: (value) => !value ? 'Rejection reason is required' : null,
+        rejection_reason: (value: string) => !value ? 'Rejection reason is required' : null,
       },
     });
 
@@ -350,7 +350,7 @@ export function openRequestReport(request: Request, refetch: () => void) {
       },
       validate: {
         items: {
-          actual_cost: (value) => value <= 0 ? 'Actual cost must be greater than 0' : null,
+          actual_cost: (value: number) => value <= 0 ? 'Actual cost must be greater than 0' : null,
         },
       },
     });

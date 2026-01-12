@@ -1,7 +1,7 @@
 export const app = {
-  name: 'Total Safety Energy',
-  // apiBaseUrl: 'https://api.dev-apetrol.site',
-  apiBaseUrl: 'http://localhost:8000',
+  name: 'SIGAP Ops',
+  apiBaseUrl: 'https://api.dev-apetrol.site',
+  // apiBaseUrl: 'http://localhost:8000',
   fakeBackend: false,
   redirectQueryParamName: 'r',
   accessTokenStoreKey: 'access_token',

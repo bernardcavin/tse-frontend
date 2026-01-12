@@ -16,7 +16,7 @@ import {
   openRequestView
 } from '@/pages/requests/request-modals';
 import { paths } from '@/routes/paths';
-import { ActionIcon, Badge, Button, Group, Menu, Text } from '@mantine/core';
+import { ActionIcon, Badge, Button, Menu, Text } from '@mantine/core';
 import {
   IconCheck,
   IconCircleCheck,
@@ -55,7 +55,6 @@ export const RequestsView = () => {
     query: {
       page,
       limit,
-      search: filters.query.search,
       sort: sort.query,
     },
   });
@@ -224,16 +223,6 @@ export const RequestsView = () => {
             </Button>
           }
         />
-
-        <Group justify="space-between" mb="md" px="md" mt="md">
-           <DataTable.TextInputFilter
-            name="search"
-            label="Search"
-            placeholder="Search requests..."
-            filters={filters}
-            style={{ width: 300 }}
-          />
-        </Group>
 
         <DataTable.Filters
           filters={filters.filters}

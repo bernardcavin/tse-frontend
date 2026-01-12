@@ -10,12 +10,11 @@ import {
   Group,
   Modal,
   NumberInput,
-  Text,
-  TextInput,
+  Text
 } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import { IconPlus, IconSearch } from '@tabler/icons-react';
+import { IconPlus } from '@tabler/icons-react';
 import { DataTableColumn } from 'mantine-datatable';
 import { useMemo, useState } from 'react';
 import z from 'zod';
@@ -60,7 +59,6 @@ export function AddItemFromInventoryModal({
       page,
       limit,
       sort: sort.query,
-      search: debouncedSearch,
     },
   });
 
@@ -260,14 +258,7 @@ export function AddItemFromInventoryModal({
       zIndex={3000}
     >
       <DataTable.Container>
-        <Group mb="md">
-          <TextInput
-            placeholder="Search by name or code..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            leftSection={<IconSearch size={16} />}
-            style={{ flex: 1 }}
-          />
+        <Group mb="md"  justify="flex-end">
           <Button variant="subtle" onClick={onClose}>
             Done
           </Button>

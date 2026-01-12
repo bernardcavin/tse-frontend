@@ -1,6 +1,7 @@
 import {
   ChecklistItemType,
-  HousekeepingCreate
+  HousekeepingCreate,
+  HousekeepingCreateType,
 } from '@/api/entities/housekeeping';
 import { getFacilityOptions } from '@/api/resources/facilities';
 import {
@@ -69,7 +70,7 @@ interface SectionProps {
   title: string;
   letter: string;
   items: ChecklistItemType[];
-  onItemChange: (index: number, status: string, notes?: string) => void;
+  onItemChange: (index: number, status: string, notes?: string | null) => void;
 }
 
 function ChecklistSection({ title, letter, items, onItemChange }: SectionProps) {
@@ -127,7 +128,7 @@ export function HousekeepingForm({ form }: HousekeepingFormProps) {
     section: 'section_a_items' | 'section_b_items' | 'section_c_items' | 'section_d_items',
     index: number,
     status: string,
-    notes?: string
+    notes?: string | null
   ) => {
     const items = [...form.values[section]];
     items[index] = {
@@ -259,7 +260,7 @@ type FormProps = {
 export function CreateHousekeepingForm({ onSubmit }: FormProps) {
   const { mutate: createHousekeeping, isPending } = useCreateHousekeeping();
 
-  const form = useForm({
+  const form = useForm<HousekeepingCreateType>({
     mode: 'controlled',
     validate: zodResolver(HousekeepingCreate),
     initialValues: {
@@ -306,7 +307,7 @@ export function EditHousekeepingForm({ onSubmit, id }: EditHousekeepingFormProps
   const { mutate: updateHousekeeping, isPending } = useUpdateHousekeeping();
   const { data, isLoading } = useHousekeeping(id);
 
-  const form = useForm({
+  const form = useForm<HousekeepingCreateType>({
     mode: 'controlled',
     validate: zodResolver(HousekeepingCreate),
     initialValues: {
