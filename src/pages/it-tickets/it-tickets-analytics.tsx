@@ -1,22 +1,8 @@
-import { useITTicketAnalytics } from '@/api/resources/it-tickets';
-import { useAuth } from '@/hooks';
+import { IconCheck, IconClock, IconTicket, IconUrgent } from '@tabler/icons-react';
 import { BarChart, LineChart, PieChart } from '@mantine/charts';
-import {
-    Card,
-    Center,
-    Grid,
-    Group,
-    SimpleGrid,
-    Stack,
-    Text,
-    Title,
-} from '@mantine/core';
-import {
-    IconCheck,
-    IconClock,
-    IconTicket,
-    IconUrgent,
-} from '@tabler/icons-react';
+import { Card, Center, Grid, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { useAuth } from '@/hooks';
+import { useITTicketAnalytics } from '@/hooks/api/it-tickets';
 
 export function ITTicketAnalytics() {
   const { user } = useAuth();
@@ -36,7 +22,14 @@ export function ITTicketAnalytics() {
     .map(([name, value]) => ({
       name: name.replace('_', ' ').toUpperCase(),
       value: value as number,
-      color: name === 'open' ? 'red.6' : name === 'in_progress' ? 'yellow.6' : name === 'resolved' ? 'green.6' : 'gray.6',
+      color:
+        name === 'open'
+          ? 'red.6'
+          : name === 'in_progress'
+            ? 'yellow.6'
+            : name === 'resolved'
+              ? 'green.6'
+              : 'gray.6',
     }))
     .filter((item) => item.value > 0);
 
@@ -59,7 +52,14 @@ export function ITTicketAnalytics() {
     .map(([name, value]) => ({
       name: name.toUpperCase(),
       value: value as number,
-      color: name === 'critical' ? 'red.6' : name === 'high' ? 'orange.6' : name === 'medium' ? 'yellow.6' : 'gray.6',
+      color:
+        name === 'critical'
+          ? 'red.6'
+          : name === 'high'
+            ? 'orange.6'
+            : name === 'medium'
+              ? 'yellow.6'
+              : 'gray.6',
     }))
     .filter((item) => item.value > 0);
 
@@ -134,17 +134,20 @@ export function ITTicketAnalytics() {
               </Group>
               <Center>
                 {statusData.length > 0 ? (
-                <PieChart
-
-                  data={statusData}
-                  withLabelsLine labelsPosition="outside" labelsType="value" withLabels withTooltip
-                  tooltipDataSource="segment"
-                />
-              ) : (
-                <Text size="sm" c="dimmed" ta="center" py="xl">
-                  No data available
-                </Text>
-              )}
+                  <PieChart
+                    data={statusData}
+                    withLabelsLine
+                    labelsPosition="outside"
+                    labelsType="value"
+                    withLabels
+                    withTooltip
+                    tooltipDataSource="segment"
+                  />
+                ) : (
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    No data available
+                  </Text>
+                )}
               </Center>
             </Stack>
           </Card>
@@ -214,7 +217,11 @@ export function ITTicketAnalytics() {
                 {priorityData.length > 0 ? (
                   <PieChart
                     data={priorityData}
-                    withLabelsLine labelsPosition="outside" labelsType="value" withLabels withTooltip
+                    withLabelsLine
+                    labelsPosition="outside"
+                    labelsType="value"
+                    withLabels
+                    withTooltip
                     tooltipDataSource="segment"
                   />
                 ) : (
@@ -225,8 +232,12 @@ export function ITTicketAnalytics() {
               </Center>
               <Stack gap="xs">
                 <Group justify="space-between">
-                  <Text size="sm" c="dimmed">Avg. Resolution Time</Text>
-                  <Text size="sm" fw={600}>{avgResolutionHours} hours</Text>
+                  <Text size="sm" c="dimmed">
+                    Avg. Resolution Time
+                  </Text>
+                  <Text size="sm" fw={600}>
+                    {avgResolutionHours} hours
+                  </Text>
                 </Group>
               </Stack>
             </Stack>

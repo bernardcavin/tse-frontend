@@ -1,11 +1,15 @@
-import { useITTickets } from '@/api/resources/it-tickets';
-import { useSafetyObservations } from '@/api/resources/safety-observations';
-import { Page } from '@/components/page';
-import { PageHeader } from '@/components/page-header';
-import { useGetAttendanceRecords } from '@/hooks/api/attendance';
-import { useGetEmployees } from '@/hooks/api/employees';
-import { openSafetyObservationView } from '@/pages/safety-observations/safety-observations-modals';
-import { paths } from '@/routes';
+import { useMemo, useState } from 'react';
+import {
+  IconCalendar,
+  IconClipboardList,
+  IconEye,
+  IconFileAlert,
+  IconTicket,
+  IconUser,
+  IconX,
+} from '@tabler/icons-react';
+import { DataTable } from 'mantine-datatable';
+import { useParams } from 'react-router-dom';
 import {
   Badge,
   Button,
@@ -17,72 +21,69 @@ import {
   Stack,
   Tabs,
   Text,
-  Title
+  Title,
 } from '@mantine/core';
 import { DatePickerInput, DateValue } from '@mantine/dates';
-import {
-  IconCalendar,
-  IconClipboardList,
-  IconEye,
-  IconFileAlert,
-  IconTicket,
-  IconUser,
-  IconX
-} from '@tabler/icons-react';
-import { DataTable } from 'mantine-datatable';
-import { useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
+import { useGetAttendanceRecords } from '@/hooks/api/attendance';
+import { useGetEmployees } from '@/hooks/api/employees';
+import { useGetITTicketList } from '@/hooks/api/it-tickets';
+import { useGetSafetyObservationList } from '@/hooks/api/safety-observations';
+import { openSafetyObservationView } from '@/pages/safety-observations/safety-observations-modals';
+import { paths } from '@/routes';
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
-  
+
   // Date filters state
-  const [attendanceDateRange, setAttendanceDateRange] = useState<[DateValue, DateValue]>([null, null]);
+  const [attendanceDateRange, setAttendanceDateRange] = useState<[DateValue, DateValue]>([
+    null,
+    null,
+  ]);
   const [hocDateRange, setHocDateRange] = useState<[DateValue, DateValue]>([null, null]);
   const [ticketDateRange, setTicketDateRange] = useState<[DateValue, DateValue]>([null, null]);
-  
+
   // Pagination state
   const [attendancePage, setAttendancePage] = useState(1);
   const [hocPage, setHocPage] = useState(1);
   const [ticketPage, setTicketPage] = useState(1);
   const PAGE_SIZE = 10;
-  
+
   // Fetch all employees and find the specific one
   const { data: employees, isLoading: employeeLoading } = useGetEmployees();
   const employee = useMemo(() => {
-    return employees?.find(emp => emp.id === id);
+    return employees?.find((emp) => emp.id === id);
   }, [employees, id]);
-  
+
   // Fetch attendance records for this employee with date filters
-  const { data: attendanceData, isLoading: attendanceLoading } = useGetAttendanceRecords({query: {
-    user_id: id,
-    start_date: attendanceDateRange[0] ? attendanceDateRange[0].toString() : undefined,
-    end_date: attendanceDateRange[1] ? attendanceDateRange[1].toString() : undefined,
-  }});
-  
+  const { data: attendanceData, isLoading: attendanceLoading } = useGetAttendanceRecords({
+    query: {
+      user_id: id,
+      start_date: attendanceDateRange[0] ? attendanceDateRange[0].toString() : undefined,
+      end_date: attendanceDateRange[1] ? attendanceDateRange[1].toString() : undefined,
+    },
+  });
+
   // Fetch safety observations for this employee
-  const { data: safetyData, isLoading: safetyLoading } = useSafetyObservations();
+  const { data: safetyData, isLoading: safetyLoading } = useGetSafetyObservationList();
 
   // Fetch IT tickets
-  const { data: ticketData, isLoading: ticketLoading } = useITTickets();
+  const { data: ticketData, isLoading: ticketLoading } = useGetITTicketList();
 
   // Filter safety observations by observer_id and date range on frontend
   const employeeObservations = useMemo(() => {
     if (!safetyData?.data) return [];
     let filtered = safetyData.data.filter((obs: any) => obs.observer_id === id);
-    
+
     // Apply date filters if set
     if (hocDateRange[0]) {
-      filtered = filtered.filter((obs: any) => 
-        new Date(obs.observation_date) >= hocDateRange[0]!
-      );
+      filtered = filtered.filter((obs: any) => new Date(obs.observation_date) >= hocDateRange[0]!);
     }
     if (hocDateRange[1]) {
-      filtered = filtered.filter((obs: any) => 
-        new Date(obs.observation_date) <= hocDateRange[1]!
-      );
+      filtered = filtered.filter((obs: any) => new Date(obs.observation_date) <= hocDateRange[1]!);
     }
-    
+
     return filtered;
   }, [safetyData, id, hocDateRange]);
 
@@ -90,35 +91,25 @@ export default function EmployeeDetailPage() {
   const employeeTickets = useMemo(() => {
     if (!ticketData?.data) return [];
     let filtered = ticketData.data.filter((ticket: any) => ticket.reporter_id === id);
-    
+
     // Apply date filters if set
     if (ticketDateRange[0]) {
-      filtered = filtered.filter((ticket: any) => 
-        new Date(ticket.created_at) >= ticketDateRange[0]!
+      filtered = filtered.filter(
+        (ticket: any) => new Date(ticket.created_at) >= ticketDateRange[0]!
       );
     }
     if (ticketDateRange[1]) {
-      filtered = filtered.filter((ticket: any) => 
-        new Date(ticket.created_at) <= ticketDateRange[1]!
+      filtered = filtered.filter(
+        (ticket: any) => new Date(ticket.created_at) <= ticketDateRange[1]!
       );
     }
-    
+
     return filtered;
   }, [ticketData, id, ticketDateRange]);
 
-  if (employeeLoading || !employee) {
-    return (
-      <Page title="Employee Details">
-        <Group justify="center" py="xl">
-          <Loader size="lg" />
-        </Group>
-      </Page>
-    );
-  }
-
   const breadcrumbs = [
     { label: 'Employees', href: paths.manager.employees },
-    { label: employee.name || 'Employee Details', href: paths.manager.employeeDetail(id!) },
+    { label: employee?.name || 'Employee Details', href: paths.manager.employeeDetail(id!) },
   ];
 
   // Helper function to calculate duration
@@ -136,8 +127,8 @@ export default function EmployeeDetailPage() {
     let totalMs = 0;
     attendanceData.data.forEach((record: any) => {
       if (record.check_out_time) {
-        const diff = new Date(record.check_out_time).getTime() - 
-                    new Date(record.check_in_time).getTime();
+        const diff =
+          new Date(record.check_out_time).getTime() - new Date(record.check_in_time).getTime();
         totalMs += diff;
       }
     });
@@ -150,12 +141,16 @@ export default function EmployeeDetailPage() {
   const totalAttendanceDays = attendanceData?.data?.length || 0;
   const totalObservations = employeeObservations.length;
   const openObservations = employeeObservations.filter((h: any) => h.status === 'open').length;
-  const resolvedObservations = employeeObservations.filter((h: any) => h.status === 'resolved').length;
+  const resolvedObservations = employeeObservations.filter(
+    (h: any) => h.status === 'resolved'
+  ).length;
 
   const totalTickets = employeeTickets.length;
   const openTickets = employeeTickets.filter((t: any) => t.status === 'open').length;
   const inProgressTickets = employeeTickets.filter((t: any) => t.status === 'in_progress').length;
-  const resolvedTickets = employeeTickets.filter((t: any) => t.status === 'resolved' || t.status === 'closed').length;
+  const resolvedTickets = employeeTickets.filter(
+    (t: any) => t.status === 'resolved' || t.status === 'closed'
+  ).length;
 
   // Attendance columns
   const attendanceColumns = [
@@ -172,15 +167,17 @@ export default function EmployeeDetailPage() {
     {
       accessor: 'check_out_time' as const,
       title: 'Check Out',
-      render: (record: any) => record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString() : '-',
+      render: (record: any) =>
+        record.check_out_time ? new Date(record.check_out_time).toLocaleTimeString() : '-',
     },
     {
       accessor: 'duration' as const,
       title: 'Duration',
-      render: (record: any) => calculateDuration(
-        new Date(record.check_in_time),
-        record.check_out_time ? new Date(record.check_out_time) : null
-      ),
+      render: (record: any) =>
+        calculateDuration(
+          new Date(record.check_in_time),
+          record.check_out_time ? new Date(record.check_out_time) : null
+        ),
     },
     {
       accessor: 'location_name' as const,
@@ -212,9 +209,13 @@ export default function EmployeeDetailPage() {
       render: (record: any) => (
         <Badge
           color={
-            record.status === 'open' ? 'red' :
-            record.status === 'in_progress' ? 'yellow' :
-            record.status === 'resolved' ? 'green' : 'gray'
+            record.status === 'open'
+              ? 'red'
+              : record.status === 'in_progress'
+                ? 'yellow'
+                : record.status === 'resolved'
+                  ? 'green'
+                  : 'gray'
           }
         >
           {record.status?.replace('_', ' ').toUpperCase()}
@@ -261,9 +262,13 @@ export default function EmployeeDetailPage() {
       render: (record: any) => (
         <Badge
           color={
-            record.priority === 'critical' ? 'red' :
-            record.priority === 'high' ? 'orange' :
-            record.priority === 'medium' ? 'yellow' : 'blue'
+            record.priority === 'critical'
+              ? 'red'
+              : record.priority === 'high'
+                ? 'orange'
+                : record.priority === 'medium'
+                  ? 'yellow'
+                  : 'blue'
           }
         >
           {record.priority?.toUpperCase()}
@@ -276,9 +281,13 @@ export default function EmployeeDetailPage() {
       render: (record: any) => (
         <Badge
           color={
-            record.status === 'open' ? 'red' :
-            record.status === 'in_progress' ? 'yellow' :
-            record.status === 'resolved' || record.status === 'closed' ? 'green' : 'gray'
+            record.status === 'open'
+              ? 'red'
+              : record.status === 'in_progress'
+                ? 'yellow'
+                : record.status === 'resolved' || record.status === 'closed'
+                  ? 'green'
+                  : 'gray'
           }
         >
           {record.status?.replace('_', ' ').toUpperCase()}
@@ -291,6 +300,16 @@ export default function EmployeeDetailPage() {
       render: (record: any) => record.assigned_to_name || '-',
     },
   ];
+
+  if (employeeLoading || !employee) {
+    return (
+      <Page title="Employee Details">
+        <Group justify="center" py="xl">
+          <Loader size="lg" />
+        </Group>
+      </Page>
+    );
+  }
 
   return (
     <Page title={`Employee: ${employee.name}`}>
@@ -306,53 +325,77 @@ export default function EmployeeDetailPage() {
             </Group>
             <Grid>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Name</Text>
+                <Text size="sm" c="dimmed">
+                  Name
+                </Text>
                 <Text fw={500}>{employee.name || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Username</Text>
+                <Text size="sm" c="dimmed">
+                  Username
+                </Text>
                 <Text fw={500}>{employee.username || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Employee Number</Text>
+                <Text size="sm" c="dimmed">
+                  Employee Number
+                </Text>
                 <Text fw={500}>{employee.employee_num || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">NIK</Text>
+                <Text size="sm" c="dimmed">
+                  NIK
+                </Text>
                 <Text fw={500}>{employee.nik || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Email</Text>
+                <Text size="sm" c="dimmed">
+                  Email
+                </Text>
                 <Text fw={500}>{employee.email || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Phone Number</Text>
+                <Text size="sm" c="dimmed">
+                  Phone Number
+                </Text>
                 <Text fw={500}>{employee.phone_number || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Department</Text>
+                <Text size="sm" c="dimmed">
+                  Department
+                </Text>
                 <Text fw={500}>{employee.department || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Position</Text>
+                <Text size="sm" c="dimmed">
+                  Position
+                </Text>
                 <Text fw={500}>{employee.position || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Hire Date</Text>
+                <Text size="sm" c="dimmed">
+                  Hire Date
+                </Text>
                 <Text fw={500}>
                   {employee.hire_date ? new Date(employee.hire_date).toLocaleDateString() : '-'}
                 </Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Address</Text>
+                <Text size="sm" c="dimmed">
+                  Address
+                </Text>
                 <Text fw={500}>{employee.address || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Emergency Contact</Text>
+                <Text size="sm" c="dimmed">
+                  Emergency Contact
+                </Text>
                 <Text fw={500}>{employee.emergency_contact_name || '-'}</Text>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <Text size="sm" c="dimmed">Emergency Phone</Text>
+                <Text size="sm" c="dimmed">
+                  Emergency Phone
+                </Text>
                 <Text fw={500}>{employee.emergency_contact_phone || '-'}</Text>
               </Grid.Col>
             </Grid>
@@ -381,8 +424,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Total Attendance Days</Text>
-                      <Text size="xl" fw={700}>{totalAttendanceDays}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Total Attendance Days
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {totalAttendanceDays}
+                      </Text>
                     </Stack>
                     <IconCalendar size={32} stroke={1.5} color="var(--mantine-color-blue-6)" />
                   </Group>
@@ -390,8 +437,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Total Duration</Text>
-                      <Text size="xl" fw={700}>{totalDuration.hours}h {totalDuration.minutes}m</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Total Duration
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {totalDuration.hours}h {totalDuration.minutes}m
+                      </Text>
                     </Stack>
                     <IconCalendar size={32} stroke={1.5} color="var(--mantine-color-cyan-6)" />
                   </Group>
@@ -456,8 +507,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Total Observations</Text>
-                      <Text size="xl" fw={700}>{totalObservations}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Total Observations
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {totalObservations}
+                      </Text>
                     </Stack>
                     <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-violet-6)" />
                   </Group>
@@ -465,8 +520,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Open Observations</Text>
-                      <Text size="xl" fw={700}>{openObservations}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Open Observations
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {openObservations}
+                      </Text>
                     </Stack>
                     <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-red-6)" />
                   </Group>
@@ -474,8 +533,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Resolved Observations</Text>
-                      <Text size="xl" fw={700}>{resolvedObservations}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Resolved Observations
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {resolvedObservations}
+                      </Text>
                     </Stack>
                     <IconFileAlert size={32} stroke={1.5} color="var(--mantine-color-green-6)" />
                   </Group>
@@ -540,8 +603,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Total Tickets</Text>
-                      <Text size="xl" fw={700}>{totalTickets}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Total Tickets
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {totalTickets}
+                      </Text>
                     </Stack>
                     <IconTicket size={32} stroke={1.5} color="var(--mantine-color-violet-6)" />
                   </Group>
@@ -549,8 +616,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Open Tickets</Text>
-                      <Text size="xl" fw={700}>{openTickets}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Open Tickets
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {openTickets}
+                      </Text>
                     </Stack>
                     <IconTicket size={32} stroke={1.5} color="var(--mantine-color-red-6)" />
                   </Group>
@@ -558,8 +629,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>In Progress</Text>
-                      <Text size="xl" fw={700}>{inProgressTickets}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        In Progress
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {inProgressTickets}
+                      </Text>
                     </Stack>
                     <IconTicket size={32} stroke={1.5} color="var(--mantine-color-yellow-6)" />
                   </Group>
@@ -567,8 +642,12 @@ export default function EmployeeDetailPage() {
                 <Card padding="md" radius="md" withBorder>
                   <Group justify="space-between">
                     <Stack gap={0}>
-                      <Text size="xs" c="dimmed" fw={500}>Resolved Tickets</Text>
-                      <Text size="xl" fw={700}>{resolvedTickets}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>
+                        Resolved Tickets
+                      </Text>
+                      <Text size="xl" fw={700}>
+                        {resolvedTickets}
+                      </Text>
                     </Stack>
                     <IconTicket size={32} stroke={1.5} color="var(--mantine-color-green-6)" />
                   </Group>

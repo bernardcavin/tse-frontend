@@ -1,40 +1,40 @@
+import { useEffect } from 'react';
+import { IconCheck, IconDeviceFloppy, IconPlus, IconUser } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import { zodResolver } from 'mantine-form-zod-resolver';
+import {
+  Button,
+  Grid,
+  Group,
+  Loader,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core';
+import { useForm } from '@mantine/form';
 import { client } from '@/api/axios';
 import { BackendResponse } from '@/api/entities';
 import {
-    ITTicketAssign,
-    ITTicketCreate,
-    ITTicketResolve,
-    ITTicketUpdate,
+  ITTicketAssign,
+  ITTicketCreate,
+  ITTicketResolve,
+  ITTicketUpdate,
 } from '@/api/entities/it-tickets';
 import { getFacilityOptions } from '@/api/resources/facilities';
-import {
-    useAssignITTicket,
-    useCreateITTicket,
-    useITTicket,
-    useResolveITTicket,
-    useUpdateITTicket,
-} from '@/api/resources/it-tickets';
 import { FormSection } from '@/components/form-section';
 import { ImageUpload } from '@/components/forms/file-upload';
 import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
-import { handleFormErrors } from '@/utilities/form';
 import {
-    Button,
-    Grid,
-    Group,
-    Loader,
-    Select,
-    Stack,
-    Text,
-    Textarea,
-    TextInput,
-} from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { IconCheck, IconDeviceFloppy, IconPlus, IconUser } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { zodResolver } from 'mantine-form-zod-resolver';
-import { useEffect } from 'react';
+  useAssignITTicket,
+  useCreateITTicket,
+  useEditITTicket,
+  useGetITTicket,
+  useResolveITTicket,
+} from '@/hooks/api/it-tickets';
+import { handleFormErrors } from '@/utilities/form';
 
 const CATEGORY_OPTIONS = [
   { value: 'hardware', label: 'Hardware' },
@@ -178,7 +178,7 @@ type FormProps = {
 
 export function CreateITTicketForm({ onSubmit }: FormProps) {
   const { mutate: createTicket, isPending } = useCreateITTicket();
-  
+
   const form = useForm({
     mode: 'controlled',
     validate: zodResolver(ITTicketCreate),
@@ -231,8 +231,8 @@ interface EditITTicketFormProps extends FormProps {
 }
 
 export function EditITTicketForm({ onSubmit, id }: EditITTicketFormProps) {
-  const { mutate: updateTicket, isPending } = useUpdateITTicket();
-  const { data, isLoading } = useITTicket(id);
+  const { mutate: updateTicket, isPending } = useEditITTicket({ route: { id } });
+  const { data, isLoading } = useGetITTicket({ route: { id } });
 
   const form = useForm({
     mode: 'controlled',
@@ -257,7 +257,7 @@ export function EditITTicketForm({ onSubmit, id }: EditITTicketFormProps) {
 
   const handleSubmit = form.onSubmit((values: any) => {
     updateTicket(
-      { id, data: values },
+      { route: { id }, variables: values },
       {
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {
@@ -295,12 +295,9 @@ interface ResolveITTicketFormProps extends FormProps {
   id: string;
 }
 
-export function ResolveITTicketForm({
-  onSubmit,
-  id,
-}: ResolveITTicketFormProps) {
+export function ResolveITTicketForm({ onSubmit, id }: ResolveITTicketFormProps) {
   const { mutate: resolveTicket, isPending } = useResolveITTicket();
-  const { data: ticket, isLoading } = useITTicket(id);
+  const { data: ticket, isLoading } = useGetITTicket({ route: { id } });
 
   const form = useForm({
     mode: 'controlled',
@@ -312,7 +309,7 @@ export function ResolveITTicketForm({
 
   const handleSubmit = form.onSubmit((values: any) => {
     resolveTicket(
-      { id, data: values },
+      { route: { id }, variables: values },
       {
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {
@@ -372,12 +369,9 @@ interface AssignITTicketFormProps extends FormProps {
   id: string;
 }
 
-export function AssignITTicketForm({
-  onSubmit,
-  id,
-}: AssignITTicketFormProps) {
+export function AssignITTicketForm({ onSubmit, id }: AssignITTicketFormProps) {
   const { mutate: assignTicket, isPending } = useAssignITTicket();
-  const { data: ticket, isLoading: loadingTicket } = useITTicket(id);
+  const { data: ticket, isLoading: loadingTicket } = useGetITTicket({ route: { id } });
 
   const { data: userOptions, isLoading: loadingUsers } = useQuery({
     queryKey: ['userOptions'],
@@ -400,7 +394,7 @@ export function AssignITTicketForm({
 
   const handleSubmit = form.onSubmit((values: any) => {
     assignTicket(
-      { id, data: values },
+      { route: { id }, variables: values },
       {
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {

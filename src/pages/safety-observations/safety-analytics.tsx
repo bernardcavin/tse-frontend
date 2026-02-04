@@ -1,22 +1,8 @@
-import { useSafetyAnalytics } from '@/api/resources/safety-observations';
-import { useAuth } from '@/hooks';
+import { IconAlertTriangle, IconCheck, IconClock, IconFileAlert } from '@tabler/icons-react';
 import { BarChart, LineChart, PieChart } from '@mantine/charts';
-import {
-    Card,
-    Center,
-    Grid,
-    Group,
-    SimpleGrid,
-    Stack,
-    Text,
-    Title,
-} from '@mantine/core';
-import {
-    IconAlertTriangle,
-    IconCheck,
-    IconClock,
-    IconFileAlert,
-} from '@tabler/icons-react';
+import { Card, Center, Grid, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { useAuth } from '@/hooks';
+import { useSafetyAnalytics } from '@/hooks/api/safety-observations';
 
 export function SafetyAnalytics() {
   const { user } = useAuth();
@@ -36,7 +22,14 @@ export function SafetyAnalytics() {
     .map(([name, value]) => ({
       name: name.replace('_', ' ').toUpperCase(),
       value: value as number,
-      color: name === 'open' ? 'red.6' : name === 'in_progress' ? 'yellow.6' : name === 'resolved' ? 'green.6' : 'gray.6',
+      color:
+        name === 'open'
+          ? 'red.6'
+          : name === 'in_progress'
+            ? 'yellow.6'
+            : name === 'resolved'
+              ? 'green.6'
+              : 'gray.6',
     }))
     .filter((item) => item.value > 0);
 
@@ -125,17 +118,20 @@ export function SafetyAnalytics() {
               </Group>
               <Center>
                 {statusData.length > 0 ? (
-                <PieChart
-
-                  data={statusData}
-                  withLabelsLine labelsPosition="outside" labelsType="value" withLabels withTooltip
-                  tooltipDataSource="segment"
-                />
-              ) : (
-                <Text size="sm" c="dimmed" ta="center" py="xl">
-                  No data available
-                </Text>
-              )}
+                  <PieChart
+                    data={statusData}
+                    withLabelsLine
+                    labelsPosition="outside"
+                    labelsType="value"
+                    withLabels
+                    withTooltip
+                    tooltipDataSource="segment"
+                  />
+                ) : (
+                  <Text size="sm" c="dimmed" ta="center" py="xl">
+                    No data available
+                  </Text>
+                )}
               </Center>
             </Stack>
           </Card>
@@ -202,24 +198,26 @@ export function SafetyAnalytics() {
             <Stack gap="md">
               <Title order={4}>Top Facilities</Title>
               <Stack gap="sm">
-                {(analytics.top_facilities || []).slice(0, 5).map((facility: any, index: number) => (
-                  <Group
-                    key={index}
-                    justify="space-between"
-                    p="xs"
-                    style={{
-                      borderLeft: '3px solid var(--mantine-color-red-6)',
-                      backgroundColor: 'var(--mantine-color-gray-0)',
-                    }}
-                  >
-                    <Text size="sm" fw={500} style={{ flex: 1 }} truncate>
-                      {facility.facility_name || facility.facility_id}
-                    </Text>
-                    <Text size="sm" fw={700} c="red">
-                      {facility.count}
-                    </Text>
-                  </Group>
-                ))}
+                {(analytics.top_facilities || [])
+                  .slice(0, 5)
+                  .map((facility: any, index: number) => (
+                    <Group
+                      key={index}
+                      justify="space-between"
+                      p="xs"
+                      style={{
+                        borderLeft: '3px solid var(--mantine-color-red-6)',
+                        backgroundColor: 'var(--mantine-color-gray-0)',
+                      }}
+                    >
+                      <Text size="sm" fw={500} style={{ flex: 1 }} truncate>
+                        {facility.facility_name || facility.facility_id}
+                      </Text>
+                      <Text size="sm" fw={700} c="red">
+                        {facility.count}
+                      </Text>
+                    </Group>
+                  ))}
                 {(!analytics.top_facilities || analytics.top_facilities.length === 0) && (
                   <Text size="sm" c="dimmed" ta="center">
                     No data available

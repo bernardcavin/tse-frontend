@@ -1,30 +1,27 @@
-import { client } from '@/api/axios';
-import { BackendResponse } from '@/api/entities';
-import {
-    ObservationStatusType,
-    SafetyObservationType,
-} from '@/api/entities/safety-observations';
-import { usePagination } from '@/api/helpers';
-import {
-    useDeleteSafetyObservation,
-    useSafetyObservations,
-} from '@/api/resources/safety-observations';
-import { AddButton } from '@/components/add-button';
-import { DataTable } from '@/components/data-table';
-import { useAuth } from '@/hooks';
-import { icons } from '@/utilities/icons';
+import { useCallback, useMemo, useState } from 'react';
+import { IconDownload } from '@tabler/icons-react';
+import { DataTableColumn } from 'mantine-datatable';
 import { Badge, Button, Group } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { IconDownload } from '@tabler/icons-react';
-import { DataTableColumn } from 'mantine-datatable';
-import { useCallback, useMemo, useState } from 'react';
+import { client } from '@/api/axios';
+import { BackendResponse } from '@/api/entities';
+import { ObservationStatusType, SafetyObservationType } from '@/api/entities/safety-observations';
+import { usePagination } from '@/api/helpers';
+import { AddButton } from '@/components/add-button';
+import { DataTable } from '@/components/data-table';
+import { useAuth } from '@/hooks';
 import {
-    openSafetyObservationClose,
-    openSafetyObservationCreate,
-    openSafetyObservationEdit,
-    openSafetyObservationResolve,
-    openSafetyObservationView,
+  useDeleteSafetyObservation,
+  useGetSafetyObservationList,
+} from '@/hooks/api/safety-observations';
+import { icons } from '@/utilities/icons';
+import {
+  openSafetyObservationClose,
+  openSafetyObservationCreate,
+  openSafetyObservationEdit,
+  openSafetyObservationResolve,
+  openSafetyObservationView,
 } from './safety-observations-modals';
 
 const STATUS_COLORS: Record<ObservationStatusType, string> = {
@@ -41,10 +38,7 @@ const STATUS_LABELS: Record<ObservationStatusType, string> = {
   closed: 'Closed',
 };
 
-type SortableFields = Pick<
-  SafetyObservationType,
-  'observation_date' | 'status'
->;
+type SortableFields = Pick<SafetyObservationType, 'observation_date' | 'status'>;
 
 // Export data fetching function
 async function fetchExportData(): Promise<Array<Record<string, string>>> {
@@ -55,7 +49,7 @@ async function fetchExportData(): Promise<Array<Record<string, string>>> {
 // Export to CSV utility
 function downloadCSV(data: Array<Record<string, string>>, filename: string) {
   if (data.length === 0) return;
-  
+
   // Define Indonesian headers
   const headerMap: Record<string, string> = {
     observation_date: 'Tanggal',
@@ -83,25 +77,27 @@ function downloadCSV(data: Array<Record<string, string>>, filename: string) {
     closed_at: 'Tanggal Penutupan',
     close_reason: 'Alasan Penutupan',
   };
-  
+
   const headers = Object.keys(data[0]);
-  const headerRow = headers.map(h => headerMap[h] || h).join(',');
-  
-  const rows = data.map(row =>
-    headers.map(h => {
-      const val = row[h] ?? '';
-      // Escape quotes and wrap in quotes if contains comma or newline
-      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-        return `"${val.replace(/"/g, '""')}"`;
-      }
-      return val;
-    }).join(',')
+  const headerRow = headers.map((h) => headerMap[h] || h).join(',');
+
+  const rows = data.map((row) =>
+    headers
+      .map((h) => {
+        const val = row[h] ?? '';
+        // Escape quotes and wrap in quotes if contains comma or newline
+        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+          return `"${val.replace(/"/g, '""')}"`;
+        }
+        return val;
+      })
+      .join(',')
   );
-  
+
   const csvContent = [headerRow, ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement('a');
   link.href = url;
   link.setAttribute('download', filename);
@@ -124,10 +120,16 @@ export function SafetyObservationsTable() {
 
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data, isLoading, refetch } = useSafetyObservations();
+  const { data, isLoading, refetch } = useGetSafetyObservationList({
+    query: {
+      page,
+      limit,
+      sort: sort.query,
+    },
+  });
 
   const { mutate: deleteObservation } = useDeleteSafetyObservation();
-  
+
   const handleDelete = useCallback(
     (id: string) => {
       modals.openConfirmModal({
@@ -136,7 +138,7 @@ export function SafetyObservationsTable() {
         confirmProps: { color: 'red' },
         labels: { confirm: 'Delete', cancel: 'Cancel' },
         onConfirm: () => {
-          deleteObservation(id);
+          deleteObservation({ route: { id } });
           refetch();
         },
       });
@@ -148,18 +150,18 @@ export function SafetyObservationsTable() {
     setIsExporting(true);
     try {
       const exportData = await fetchExportData();
-      
+
       if (!exportData || exportData.length === 0) {
         notifications.show({ message: 'No data to export', color: 'yellow' });
         return;
       }
-      
+
       // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0];
       const filename = `safety_observations_${dateStr}.csv`;
-      
+
       downloadCSV(exportData, filename);
-      
+
       notifications.show({
         title: 'Export Berhasil',
         message: 'File berhasil diunduh',
@@ -226,9 +228,7 @@ export function SafetyObservationsTable() {
         sortable: true,
         textAlign: 'center',
         render: ({ status }) => (
-          <Badge color={STATUS_COLORS[status]} >
-            {STATUS_LABELS[status]}
-          </Badge>
+          <Badge color={STATUS_COLORS[status]}>{STATUS_LABELS[status]}</Badge>
         ),
       },
       {

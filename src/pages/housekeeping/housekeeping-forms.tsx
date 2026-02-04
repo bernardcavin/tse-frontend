@@ -1,18 +1,7 @@
-import {
-  ChecklistItemType,
-  HousekeepingCreate,
-  HousekeepingCreateType,
-} from '@/api/entities/housekeeping';
-import { getFacilityOptions } from '@/api/resources/facilities';
-import {
-  useCreateHousekeeping,
-  useHousekeeping,
-  useUpdateHousekeeping,
-} from '@/api/resources/housekeeping';
-import { FormSection } from '@/components/form-section';
-import { FormProvider } from '@/components/forms/form-provider';
-import { normalizeDate } from '@/utilities/date';
-import { handleFormErrors } from '@/utilities/form';
+import { useEffect } from 'react';
+import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import { zodResolver } from 'mantine-form-zod-resolver';
 import {
   Button,
   Divider,
@@ -29,10 +18,21 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { zodResolver } from 'mantine-form-zod-resolver';
-import { useEffect } from 'react';
+import {
+  ChecklistItemType,
+  HousekeepingCreate,
+  HousekeepingCreateType,
+} from '@/api/entities/housekeeping';
+import { getFacilityOptions } from '@/api/resources/facilities';
+import { FormSection } from '@/components/form-section';
+import { FormProvider } from '@/components/forms/form-provider';
+import {
+  useCreateHousekeeping,
+  useEditHousekeeping,
+  useGetHousekeeping,
+} from '@/hooks/api/housekeeping';
+import { normalizeDate } from '@/utilities/date';
+import { handleFormErrors } from '@/utilities/form';
 
 const SECTION_A_ITEMS = [
   'Lantai bersih dari debu, minyak, dan kotoran',
@@ -191,7 +191,8 @@ export function HousekeepingForm({ form }: HousekeepingFormProps) {
       <Divider />
 
       <Text size="sm" c="dimmed">
-        Keterangan: ✔ = Baik / Sesuai &nbsp;&nbsp; ✖ = Tidak Sesuai &nbsp;&nbsp; N/A = Tidak Berlaku
+        Keterangan: ✔ = Baik / Sesuai &nbsp;&nbsp; ✖ = Tidak Sesuai &nbsp;&nbsp; N/A = Tidak
+        Berlaku
       </Text>
 
       {/* Section A */}
@@ -290,7 +291,12 @@ export function CreateHousekeepingForm({ onSubmit }: FormProps) {
       <Stack>
         <HousekeepingForm form={form} />
         <Group justify="flex-end">
-          <Button type="submit" loading={isPending} mt="md" leftSection={<IconPlus size={16} stroke={5} />}>
+          <Button
+            type="submit"
+            loading={isPending}
+            mt="md"
+            leftSection={<IconPlus size={16} stroke={5} />}
+          >
             Create Checklist
           </Button>
         </Group>
@@ -304,8 +310,8 @@ interface EditHousekeepingFormProps extends FormProps {
 }
 
 export function EditHousekeepingForm({ onSubmit, id }: EditHousekeepingFormProps) {
-  const { mutate: updateHousekeeping, isPending } = useUpdateHousekeeping();
-  const { data, isLoading } = useHousekeeping(id);
+  const { mutate: updateHousekeeping, isPending } = useEditHousekeeping();
+  const { data, isLoading } = useGetHousekeeping({ route: { id } });
 
   const form = useForm<HousekeepingCreateType>({
     mode: 'controlled',
@@ -330,10 +336,14 @@ export function EditHousekeepingForm({ onSubmit, id }: EditHousekeepingFormProps
         inspection_date: new Date(data.inspection_date),
         inspector_name: data.inspector_name || '',
         facility_id: data.facility_id || null,
-        section_a_items: (data.section_a_items || SECTION_A_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
-        section_b_items: (data.section_b_items || SECTION_B_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
-        section_c_items: (data.section_c_items || SECTION_C_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
-        section_d_items: (data.section_d_items || SECTION_D_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
+        section_a_items: (data.section_a_items ||
+          SECTION_A_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
+        section_b_items: (data.section_b_items ||
+          SECTION_B_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
+        section_c_items: (data.section_c_items ||
+          SECTION_C_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
+        section_d_items: (data.section_d_items ||
+          SECTION_D_ITEMS.map((item) => ({ item, status: null, notes: '' }))) as any,
         additional_notes: data.additional_notes || '',
       });
     }
@@ -341,7 +351,7 @@ export function EditHousekeepingForm({ onSubmit, id }: EditHousekeepingFormProps
 
   const handleSubmit = form.onSubmit((values: any) => {
     updateHousekeeping(
-      { id, data: values },
+      { route: { id }, variables: values },
       {
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {

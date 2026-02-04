@@ -1,41 +1,41 @@
+import { useEffect, useState } from 'react';
+import { IconBan, IconCheck, IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import { zodResolver } from 'mantine-form-zod-resolver';
 import {
-    SafetyObservationClose,
-    SafetyObservationCreate,
-    SafetyObservationResolve,
-    SafetyObservationUpdate
+  Button,
+  Checkbox,
+  Grid,
+  Group,
+  Loader,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core';
+import { DatePickerInput, TimePicker } from '@mantine/dates';
+import { useForm } from '@mantine/form';
+import {
+  SafetyObservationClose,
+  SafetyObservationCreate,
+  SafetyObservationResolve,
+  SafetyObservationUpdate,
 } from '@/api/entities/safety-observations';
 import { getFacilityOptions } from '@/api/resources/facilities';
-import {
-    useCloseSafetyObservation,
-    useCreateSafetyObservation,
-    useResolveSafetyObservation,
-    useSafetyObservation,
-    useUpdateSafetyObservation,
-} from '@/api/resources/safety-observations';
 import { FormSection } from '@/components/form-section';
 import { ImageUpload } from '@/components/forms/file-upload';
 import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
+import {
+  useCloseSafetyObservation,
+  useCreateSafetyObservation,
+  useEditSafetyObservation,
+  useGetSafetyObservation,
+  useResolveSafetyObservation,
+} from '@/hooks/api/safety-observations';
 import { normalizeDate } from '@/utilities/date';
 import { handleFormErrors } from '@/utilities/form';
-import {
-    Button,
-    Checkbox,
-    Grid,
-    Group,
-    Loader,
-    Select,
-    Stack,
-    Text,
-    Textarea,
-    TextInput,
-} from '@mantine/core';
-import { DatePickerInput, TimePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
-import { IconBan, IconCheck, IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { zodResolver } from 'mantine-form-zod-resolver';
-import { useEffect, useState } from 'react';
 
 const OBSERVATION_TYPES = [
   { value: 'safe_act', label: 'Tindakan Aman (Safe Act)' },
@@ -261,7 +261,7 @@ type FormProps = {
 
 export function CreateSafetyObservationForm({ onSubmit }: FormProps) {
   const { mutate: createObservation, isPending } = useCreateSafetyObservation();
-  
+
   const form = useForm({
     mode: 'controlled',
     validate: zodResolver(SafetyObservationCreate),
@@ -325,8 +325,8 @@ interface EditSafetyObservationFormProps extends FormProps {
 }
 
 export function EditSafetyObservationForm({ onSubmit, id }: EditSafetyObservationFormProps) {
-  const { mutate: updateObservation, isPending } = useUpdateSafetyObservation();
-  const { data, isLoading } = useSafetyObservation(id);
+  const { mutate: updateObservation, isPending } = useEditSafetyObservation();
+  const { data, isLoading } = useGetSafetyObservation({ route: { id } });
 
   const form = useForm({
     mode: 'controlled',
@@ -347,7 +347,7 @@ export function EditSafetyObservationForm({ onSubmit, id }: EditSafetyObservatio
 
   const handleSubmit = form.onSubmit((values: any) => {
     updateObservation(
-      { id, data: values },
+      { route: { id }, variables: values },
       {
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {
@@ -385,12 +385,9 @@ interface ResolveSafetyObservationFormProps extends FormProps {
   id: string;
 }
 
-export function ResolveSafetyObservationForm({
-  onSubmit,
-  id,
-}: ResolveSafetyObservationFormProps) {
+export function ResolveSafetyObservationForm({ onSubmit, id }: ResolveSafetyObservationFormProps) {
   const { mutate: resolveObservation, isPending } = useResolveSafetyObservation();
-  const { data: observation, isLoading } = useSafetyObservation(id);
+  const { data: observation, isLoading } = useGetSafetyObservation({ route: { id } });
 
   const form = useForm({
     mode: 'controlled',
@@ -402,7 +399,7 @@ export function ResolveSafetyObservationForm({
 
   const handleSubmit = form.onSubmit((values: any) => {
     resolveObservation(
-      { id, data: values },
+      { route: { id }, variables: values },
       {
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {
@@ -462,12 +459,9 @@ interface CloseSafetyObservationFormProps extends FormProps {
   id: string;
 }
 
-export function CloseSafetyObservationForm({
-  onSubmit,
-  id,
-}: CloseSafetyObservationFormProps) {
+export function CloseSafetyObservationForm({ onSubmit, id }: CloseSafetyObservationFormProps) {
   const { mutate: closeObservation, isPending } = useCloseSafetyObservation();
-  const { data: observation, isLoading } = useSafetyObservation(id);
+  const { data: observation, isLoading } = useGetSafetyObservation({ route: { id } });
 
   const form = useForm({
     mode: 'controlled',
@@ -479,7 +473,7 @@ export function CloseSafetyObservationForm({
 
   const handleSubmit = form.onSubmit((values: any) => {
     closeObservation(
-      { id, data: values },
+      { route: { id }, variables: values },
       {
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {

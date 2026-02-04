@@ -1,17 +1,21 @@
-import { HousekeepingType } from '@/api/entities/housekeeping';
-import { usePagination } from '@/api/helpers';
-import { useDeleteHousekeeping, useHousekeepingList } from '@/api/resources/housekeeping';
-import { AddButton } from '@/components/add-button';
-import { DataTable } from '@/components/data-table';
-import { useAuth } from '@/hooks';
-import { formatDateReadable } from '@/utilities/date';
-import { icons } from '@/utilities/icons';
+import { useCallback, useMemo, useState } from 'react';
+import { DataTableColumn } from 'mantine-datatable';
 import { Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { DataTableColumn } from 'mantine-datatable';
-import { useCallback, useMemo, useState } from 'react';
-import { CreateHousekeepingModal, EditHousekeepingModal, ViewHousekeepingModal } from './housekeeping-modals';
+import { HousekeepingType } from '@/api/entities/housekeeping';
+import { usePagination } from '@/api/helpers';
+import { AddButton } from '@/components/add-button';
+import { DataTable } from '@/components/data-table';
+import { useAuth } from '@/hooks';
+import { useDeleteHousekeeping, useGetHousekeepingList } from '@/hooks/api/housekeeping';
+import { formatDateReadable } from '@/utilities/date';
+import { icons } from '@/utilities/icons';
+import {
+  CreateHousekeepingModal,
+  EditHousekeepingModal,
+  ViewHousekeepingModal,
+} from './housekeeping-modals';
 
 type SortableFields = Pick<
   HousekeepingType,
@@ -31,15 +35,25 @@ export function HousekeepingTable() {
     },
   });
 
-  const { data: housekeepingData, isLoading, refetch } = useHousekeepingList();
-  const deleteHousekeeping = useDeleteHousekeeping();
+  const {
+    data: housekeepingData,
+    isLoading,
+    refetch,
+  } = useGetHousekeepingList({
+    query: {
+      page,
+      limit,
+      sort: sort.query,
+    },
+  });
+  const { mutate: deleteHousekeeping } = useDeleteHousekeeping();
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedHousekeeping, setSelectedHousekeeping] = useState<HousekeepingType | null>(null);
 
-  const housekeepingList: HousekeepingType[] = housekeepingData?.items || [];
+  const housekeepingList: HousekeepingType[] = housekeepingData?.data || [];
 
   const handleView = useCallback((housekeeping: HousekeepingType) => {
     setSelectedHousekeeping(housekeeping);
@@ -57,15 +71,15 @@ export function HousekeepingTable() {
         title: 'Delete Housekeeping Checklist',
         children: (
           <Text>
-            Are you sure you want to delete the checklist at {housekeeping.location_area}?
-            This action cannot be undone.
+            Are you sure you want to delete the checklist at {housekeeping.location_area}? This
+            action cannot be undone.
           </Text>
         ),
         labels: { confirm: 'Delete', cancel: 'Cancel' },
         confirmProps: { color: 'red' },
         onConfirm: async () => {
           try {
-            await deleteHousekeeping.mutateAsync(housekeeping.id!);
+            await deleteHousekeeping({ route: { id: housekeeping.id! } });
             notifications.show({
               title: 'Success',
               message: 'Housekeeping checklist deleted successfully',

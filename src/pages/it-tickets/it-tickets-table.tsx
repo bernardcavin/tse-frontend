@@ -1,31 +1,28 @@
-import { client } from '@/api/axios';
-import { BackendResponse } from '@/api/entities';
-import {
-    ITTicketType,
-    TicketCategoryType,
-    TicketPriorityType,
-    TicketStatusType,
-} from '@/api/entities/it-tickets';
-import { usePagination } from '@/api/helpers';
-import {
-    useDeleteITTicket,
-    useITTickets,
-} from '@/api/resources/it-tickets';
-import { AddButton } from '@/components/add-button';
-import { DataTable } from '@/components/data-table';
-import { useAuth } from '@/hooks';
+import { useCallback, useMemo, useState } from 'react';
+import { IconDownload, IconTicket } from '@tabler/icons-react';
+import { DataTableColumn } from 'mantine-datatable';
 import { Badge, Button, Group } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { IconDownload, IconTicket } from '@tabler/icons-react';
-import { DataTableColumn } from 'mantine-datatable';
-import { useCallback, useMemo, useState } from 'react';
+import { client } from '@/api/axios';
+import { BackendResponse } from '@/api/entities';
 import {
-    openITTicketAssign,
-    openITTicketCreate,
-    openITTicketEdit,
-    openITTicketResolve,
-    openITTicketView,
+  ITTicketType,
+  TicketCategoryType,
+  TicketPriorityType,
+  TicketStatusType,
+} from '@/api/entities/it-tickets';
+import { usePagination } from '@/api/helpers';
+import { AddButton } from '@/components/add-button';
+import { DataTable } from '@/components/data-table';
+import { useAuth } from '@/hooks';
+import { useDeleteITTicket, useGetITTicketList } from '@/hooks/api/it-tickets';
+import {
+  openITTicketAssign,
+  openITTicketCreate,
+  openITTicketEdit,
+  openITTicketResolve,
+  openITTicketView,
 } from './it-tickets-modals';
 
 const STATUS_COLORS: Record<TicketStatusType, string> = {
@@ -64,10 +61,7 @@ const PRIORITY_LABELS: Record<TicketPriorityType, string> = {
   critical: 'Critical',
 };
 
-type SortableFields = Pick<
-  ITTicketType,
-  'created_at' | 'status' | 'priority'
->;
+type SortableFields = Pick<ITTicketType, 'created_at' | 'status' | 'priority'>;
 
 // Export data fetching function
 async function fetchExportData(): Promise<Array<Record<string, string>>> {
@@ -78,7 +72,7 @@ async function fetchExportData(): Promise<Array<Record<string, string>>> {
 // Export to CSV utility
 function downloadCSV(data: Array<Record<string, string>>, filename: string) {
   if (data.length === 0) return;
-  
+
   // Define Indonesian headers
   const headerMap: Record<string, string> = {
     title: 'Judul',
@@ -95,25 +89,27 @@ function downloadCSV(data: Array<Record<string, string>>, filename: string) {
     resolution_notes: 'Catatan Penyelesaian',
     created_at: 'Tanggal Dibuat',
   };
-  
+
   const headers = Object.keys(data[0]);
-  const headerRow = headers.map(h => headerMap[h] || h).join(',');
-  
-  const rows = data.map(row =>
-    headers.map(h => {
-      const val = row[h] ?? '';
-      // Escape quotes and wrap in quotes if contains comma or newline
-      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
-        return `"${val.replace(/"/g, '""')}"`;
-      }
-      return val;
-    }).join(',')
+  const headerRow = headers.map((h) => headerMap[h] || h).join(',');
+
+  const rows = data.map((row) =>
+    headers
+      .map((h) => {
+        const val = row[h] ?? '';
+        // Escape quotes and wrap in quotes if contains comma or newline
+        if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+          return `"${val.replace(/"/g, '""')}"`;
+        }
+        return val;
+      })
+      .join(',')
   );
-  
+
   const csvContent = [headerRow, ...rows].join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
-  
+
   const link = document.createElement('a');
   link.href = url;
   link.setAttribute('download', filename);
@@ -136,10 +132,16 @@ export function ITTicketsTable() {
 
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data, isLoading, refetch } = useITTickets();
+  const { data, isLoading, refetch } = useGetITTicketList({
+    query: {
+      page,
+      limit,
+      sort: sort.query,
+    },
+  });
 
   const { mutate: deleteTicket } = useDeleteITTicket();
-  
+
   const handleDelete = useCallback(
     (id: string) => {
       modals.openConfirmModal({
@@ -148,7 +150,7 @@ export function ITTicketsTable() {
         confirmProps: { color: 'red' },
         labels: { confirm: 'Delete', cancel: 'Cancel' },
         onConfirm: () => {
-          deleteTicket(id);
+          deleteTicket({ route: { id } });
           refetch();
         },
       });
@@ -160,18 +162,18 @@ export function ITTicketsTable() {
     setIsExporting(true);
     try {
       const exportData = await fetchExportData();
-      
+
       if (!exportData || exportData.length === 0) {
         notifications.show({ message: 'No data to export', color: 'yellow' });
         return;
       }
-      
+
       // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0];
       const filename = `it_tickets_${dateStr}.csv`;
-      
+
       downloadCSV(exportData, filename);
-      
+
       notifications.show({
         title: 'Export Berhasil',
         message: 'File berhasil diunduh',
@@ -199,20 +201,14 @@ export function ITTicketsTable() {
       {
         accessor: 'category',
         title: 'Category',
-        render: ({ category }) => (
-          <Badge variant="light">
-            {CATEGORY_LABELS[category]}
-          </Badge>
-        ),
+        render: ({ category }) => <Badge variant="light">{CATEGORY_LABELS[category]}</Badge>,
       },
       {
         accessor: 'priority',
         title: 'Priority',
         sortable: true,
         render: ({ priority }) => (
-          <Badge color={PRIORITY_COLORS[priority]}>
-            {PRIORITY_LABELS[priority]}
-          </Badge>
+          <Badge color={PRIORITY_COLORS[priority]}>{PRIORITY_LABELS[priority]}</Badge>
         ),
       },
       {
@@ -221,9 +217,7 @@ export function ITTicketsTable() {
         sortable: true,
         textAlign: 'center',
         render: ({ status }) => (
-          <Badge color={STATUS_COLORS[status]}>
-            {STATUS_LABELS[status]}
-          </Badge>
+          <Badge color={STATUS_COLORS[status]}>{STATUS_LABELS[status]}</Badge>
         ),
       },
       {
@@ -298,11 +292,7 @@ export function ITTicketsTable() {
             >
               Export
             </Button>
-            <AddButton
-              variant="default"
-              size="xs"
-              onClick={() => openITTicketCreate(refetch)}
-            >
+            <AddButton variant="default" size="xs" onClick={() => openITTicketCreate(refetch)}>
               Add Ticket
             </AddButton>
           </Group>

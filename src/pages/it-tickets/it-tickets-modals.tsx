@@ -1,21 +1,13 @@
-import { useITTicket } from '@/api/resources/it-tickets';
+import { Badge, Divider, Grid, Group, Loader, Stack, Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import { FormSection } from '@/components/form-section';
 import { CarouselImageAttachment } from '@/components/image-attachment';
+import { useGetITTicket } from '@/hooks/api/it-tickets';
 import {
-    Badge,
-    Divider,
-    Grid,
-    Group,
-    Loader,
-    Stack,
-    Text,
-} from '@mantine/core';
-import { modals } from '@mantine/modals';
-import {
-    AssignITTicketForm,
-    CreateITTicketForm,
-    EditITTicketForm,
-    ResolveITTicketForm,
+  AssignITTicketForm,
+  CreateITTicketForm,
+  EditITTicketForm,
+  ResolveITTicketForm,
 } from './it-tickets-forms';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -59,7 +51,7 @@ interface ViewITTicketProps {
 }
 
 export function ViewITTicket({ id }: ViewITTicketProps) {
-  const { data, isLoading } = useITTicket(id);
+  const { data, isLoading } = useGetITTicket({ route: { id } });
 
   if (isLoading) {
     return (
@@ -97,9 +89,7 @@ export function ViewITTicket({ id }: ViewITTicketProps) {
             <Field
               label="Category"
               value={
-                <Badge variant="light">
-                  {CATEGORY_LABELS[ticket.category] || ticket.category}
-                </Badge>
+                <Badge variant="light">{CATEGORY_LABELS[ticket.category] || ticket.category}</Badge>
               }
             />
           </Grid.Col>
@@ -157,14 +147,13 @@ export function ViewITTicket({ id }: ViewITTicketProps) {
         <FormSection title="Resolution Information">
           <Grid>
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Field label="Resolved By" value={ticket.resolved_by_name || ticket.resolved_by_id || 'N/A'} />
+              <Field
+                label="Resolved By"
+                value={ticket.resolved_by_name || ticket.resolved_by_id || 'N/A'}
+              />
               <Field
                 label="Resolved At"
-                value={
-                  ticket.resolved_at
-                    ? new Date(ticket.resolved_at).toLocaleString()
-                    : '-'
-                }
+                value={ticket.resolved_at ? new Date(ticket.resolved_at).toLocaleString() : '-'}
               />
             </Grid.Col>
             <Grid.Col span={12}>

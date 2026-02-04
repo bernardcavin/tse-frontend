@@ -1,7 +1,7 @@
-import { useHousekeepingAnalytics } from '@/api/resources/housekeeping';
-import { useAuth } from '@/hooks';
-import { Card, Group, SimpleGrid, Stack, Text } from '@mantine/core';
 import { IconBuilding, IconClipboardCheck, IconClock } from '@tabler/icons-react';
+import { Card, Group, SimpleGrid, Stack, Text } from '@mantine/core';
+import { useAuth } from '@/hooks';
+import { useHousekeepingAnalytics } from '@/hooks/api/housekeeping';
 
 export function HousekeepingAnalytics() {
   const { user } = useAuth();

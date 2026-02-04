@@ -1,21 +1,13 @@
-import { useSafetyObservation } from '@/api/resources/safety-observations';
+import { Badge, Divider, Grid, Group, Loader, Stack, Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import { FormSection } from '@/components/form-section';
 import { CarouselImageAttachment } from '@/components/image-attachment';
+import { useGetSafetyObservation } from '@/hooks/api/safety-observations';
 import {
-    Badge,
-    Divider,
-    Grid,
-    Group,
-    Loader,
-    Stack,
-    Text,
-} from '@mantine/core';
-import { modals } from '@mantine/modals';
-import {
-    CloseSafetyObservationForm,
-    CreateSafetyObservationForm,
-    EditSafetyObservationForm,
-    ResolveSafetyObservationForm,
+  CloseSafetyObservationForm,
+  CreateSafetyObservationForm,
+  EditSafetyObservationForm,
+  ResolveSafetyObservationForm,
 } from './safety-observations-forms';
 
 interface ViewSafetyObservationProps {
@@ -23,7 +15,7 @@ interface ViewSafetyObservationProps {
 }
 
 export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
-  const { data, isLoading } = useSafetyObservation(id);
+  const { data, isLoading } = useGetSafetyObservation({ route: { id } });
 
   if (isLoading) {
     return (
@@ -56,7 +48,10 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
       <FormSection title="A. General Information">
         <Grid>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <Field label="Observation Date" value={new Date(observation.observation_date).toLocaleDateString()} />
+            <Field
+              label="Observation Date"
+              value={new Date(observation.observation_date).toLocaleDateString()}
+            />
             <Field label="Observation Time" value={observation.observation_time} />
             <Field label="Location / Area" value={observation.location_area} />
           </Grid.Col>
@@ -105,7 +100,9 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
             observation.observation_categories && observation.observation_categories.length > 0 ? (
               <Group gap={4}>
                 {observation.observation_categories.map((cat, idx) => (
-                  <Badge key={idx} color="blue">{cat}</Badge>
+                  <Badge key={idx} color="blue">
+                    {cat}
+                  </Badge>
                 ))}
               </Group>
             ) : (
@@ -131,7 +128,9 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
             observation.potential_impacts && observation.potential_impacts.length > 0 ? (
               <Group gap={4}>
                 {observation.potential_impacts.map((impact, idx) => (
-                  <Badge key={idx} color="orange">{impact}</Badge>
+                  <Badge key={idx} color="orange">
+                    {impact}
+                  </Badge>
                 ))}
               </Group>
             ) : (
@@ -151,7 +150,10 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
 
       {/* 🔹 H. Immediate Action */}
       <FormSection title="H. Immediate Action">
-        <Field label="Action Taken?" value={observation.immediate_action_done === 'sudah_dilakukan' ? 'Yes' : 'No'} />
+        <Field
+          label="Action Taken?"
+          value={observation.immediate_action_done === 'sudah_dilakukan' ? 'Yes' : 'No'}
+        />
         {observation.immediate_action_description && (
           <Field label="Action Description" value={observation.immediate_action_description} />
         )}
@@ -159,7 +161,10 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
 
       {/* 🔹 I. Supporting Evidence */}
       <FormSection title="I. Supporting Evidence">
-        <Field label="Evidence Status" value={observation.has_supporting_evidence === 'terlampir' ? 'Attached' : 'None'} />
+        <Field
+          label="Evidence Status"
+          value={observation.has_supporting_evidence === 'terlampir' ? 'Attached' : 'None'}
+        />
       </FormSection>
 
       {/* Resolution Information */}
@@ -167,13 +172,14 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
         <FormSection title="Resolution Information">
           <Grid>
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Field label="Resolved By" value={observation.resolved_by_name || observation.resolved_by_id || 'N/A'} />
+              <Field
+                label="Resolved By"
+                value={observation.resolved_by_name || observation.resolved_by_id || 'N/A'}
+              />
               <Field
                 label="Resolved At"
                 value={
-                  observation.resolved_at
-                    ? new Date(observation.resolved_at).toLocaleString()
-                    : '-'
+                  observation.resolved_at ? new Date(observation.resolved_at).toLocaleString() : '-'
                 }
               />
             </Grid.Col>
@@ -189,13 +195,14 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
         <FormSection title="Close Information">
           <Grid>
             <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Field label="Closed By" value={observation.closed_by_name || observation.closed_by_id || 'N/A'} />
+              <Field
+                label="Closed By"
+                value={observation.closed_by_name || observation.closed_by_id || 'N/A'}
+              />
               <Field
                 label="Closed At"
                 value={
-                  observation.closed_at
-                    ? new Date(observation.closed_at).toLocaleString()
-                    : '-'
+                  observation.closed_at ? new Date(observation.closed_at).toLocaleString() : '-'
                 }
               />
             </Grid.Col>
