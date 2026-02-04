@@ -13,16 +13,20 @@ import {
   createPaginationQueryHook,
   createPostMutationHook,
   createPutMutationHook,
-  SortableQueryParams,
 } from '@/api/helpers';
 
 // ============================================================================
 // QUERIES
 // ============================================================================
 
+type FilterableQueryParams = {
+  sort?: `${string}:${'asc' | 'desc'}`;
+  filter?: string;
+};
+
 export const useGetSafetyObservationList = createPaginationQueryHook<
   typeof SafetyObservation,
-  SortableQueryParams
+  FilterableQueryParams
 >({
   endpoint: '/safety-observations',
   dataSchema: SafetyObservation,

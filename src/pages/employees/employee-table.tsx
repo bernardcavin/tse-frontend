@@ -1,17 +1,17 @@
+import { useCallback, useMemo } from 'react';
+import { DataTableColumn } from 'mantine-datatable';
+import { useNavigate } from 'react-router-dom';
+import z from 'zod';
+import { Badge, Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import { User } from '@/api/entities/auth';
 import { usePagination } from '@/api/helpers';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
 import { useAuth } from '@/hooks';
-import { useDeleteEmployee, useGetEmployees } from '@/hooks/api/employees';
+import { useDeleteEmployee, useGetEmployeeList } from '@/hooks/api/employees';
 import { paths } from '@/routes';
 import { icons } from '@/utilities/icons';
-import { Badge, Text } from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { DataTableColumn } from 'mantine-datatable';
-import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import z from 'zod';
 import { openEmployeeCreate, openEmployeeEdit } from './employee-modals';
 
 type EmployeeType = z.infer<typeof User>;
@@ -32,7 +32,17 @@ export function EmployeeTable() {
     },
   });
 
-  const { data: employees, isLoading, refetch } = useGetEmployees();
+  const {
+    data: employees,
+    isLoading,
+    refetch,
+  } = useGetEmployeeList({
+    query: {
+      page,
+      limit,
+      sort: sort.query,
+    },
+  });
 
   const { mutate: deleteEmployee } = useDeleteEmployee();
   const handleDelete = useCallback(
@@ -97,11 +107,7 @@ export function EmployeeTable() {
         accessor: 'role',
         title: 'Role',
         sortable: true,
-        render: ({ role }) => (
-          <Badge color={role === 'MANAGER' ? 'blue' : 'gray'} >
-            {role}
-          </Badge>
-        ),
+        render: ({ role }) => <Badge color={role === 'MANAGER' ? 'blue' : 'gray'}>{role}</Badge>,
       },
       {
         accessor: 'id',
@@ -118,8 +124,8 @@ export function EmployeeTable() {
             onView={() => navigate(paths.manager.employeeDetail(row.id))}
             onEdit={canModifyEmployees ? () => openEmployeeEdit(row.id, refetch) : undefined}
             onDelete={
-              canModifyEmployees && row.id !== currentUser?.id 
-                ? () => handleDelete(row.id) 
+              canModifyEmployees && row.id !== currentUser?.id
+                ? () => handleDelete(row.id)
                 : undefined // HR/Finance cannot delete, and prevent deleting yourself
             }
           />
@@ -153,11 +159,11 @@ export function EmployeeTable() {
           recordsPerPageLabel={DataTable.recordsPerPageLabel('employees')}
           paginationText={DataTable.paginationText('employees')}
           page={page}
-          records={employees ?? []}
+          records={employees?.data ?? []}
           fetching={isLoading}
           onPageChange={setPage}
           recordsPerPage={limit}
-          totalRecords={employees?.length ?? 0}
+          totalRecords={employees?.meta.total ?? 0}
           onRecordsPerPageChange={setLimit}
           recordsPerPageOptions={[5, 15, 30]}
           sortStatus={sort.status}

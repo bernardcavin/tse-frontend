@@ -27,7 +27,7 @@ import { DatePickerInput, DateValue } from '@mantine/dates';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { useGetAttendanceRecords } from '@/hooks/api/attendance';
-import { useGetEmployees } from '@/hooks/api/employees';
+import { useGetEmployee } from '@/hooks/api/employees';
 import { useGetITTicketList } from '@/hooks/api/it-tickets';
 import { useGetSafetyObservationList } from '@/hooks/api/safety-observations';
 import { openSafetyObservationView } from '@/pages/safety-observations/safety-observations-modals';
@@ -51,10 +51,7 @@ export default function EmployeeDetailPage() {
   const PAGE_SIZE = 10;
 
   // Fetch all employees and find the specific one
-  const { data: employees, isLoading: employeeLoading } = useGetEmployees();
-  const employee = useMemo(() => {
-    return employees?.find((emp) => emp.id === id);
-  }, [employees, id]);
+  const { data: employee, isLoading: employeeLoading } = useGetEmployee({ route: { id } });
 
   // Fetch attendance records for this employee with date filters
   const { data: attendanceData, isLoading: attendanceLoading } = useGetAttendanceRecords({

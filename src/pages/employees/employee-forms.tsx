@@ -1,14 +1,23 @@
-import { CreateEmployee, UpdateEmployee } from '@/api/entities/auth';
-import { FormSection } from '@/components/form-section';
-import { useCreateEmployee, useGetEmployees, useUpdateEmployee } from '@/hooks/api/employees';
-import { emptyStringToNull } from '@/utilities/object';
-import { Button, Grid, Group, PasswordInput, Select, Stack, Textarea, TextInput } from '@mantine/core';
+import { useEffect } from 'react';
+import { zodResolver } from 'mantine-form-zod-resolver';
+import z from 'zod';
+import {
+  Button,
+  Grid,
+  Group,
+  PasswordInput,
+  Select,
+  Stack,
+  Textarea,
+  TextInput,
+} from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
-import { zodResolver } from 'mantine-form-zod-resolver';
-import { useEffect } from 'react';
-import z from 'zod';
+import { CreateEmployee, UpdateEmployee } from '@/api/entities/auth';
+import { FormSection } from '@/components/form-section';
+import { useCreateEmployee, useGetEmployee, useUpdateEmployee } from '@/hooks/api/employees';
+import { emptyStringToNull } from '@/utilities/object';
 
 const DEPARTMENT_OPTIONS = [
   { value: 'HSE', label: 'HSE' },
@@ -32,8 +41,7 @@ interface EmployeeFormProps {
 export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
   const isEditing = !!employeeId;
 
-  const { data: employees } = useGetEmployees();
-  const employee = employees?.find((emp) => emp.id === employeeId);
+  const { data: employee } = useGetEmployee({ route: { id: employeeId } });
 
   const { mutate: createEmployee, isPending: isCreating } = useCreateEmployee();
   const { mutate: updateEmployee, isPending: isUpdating } = useUpdateEmployee();
@@ -64,11 +72,9 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
   }, [employee, isEditing]);
 
   const handleSubmit = form.onSubmit((values: any) => {
-
     if (isEditing && employeeId) {
-
       updateEmployee(
-        { id: employeeId, data: emptyStringToNull(values) },
+        { route: { id: employeeId }, variables: emptyStringToNull(values) },
         {
           onSuccess: () => {
             modals.close('employee-edit');

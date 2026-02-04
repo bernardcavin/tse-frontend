@@ -1,86 +1,100 @@
-import { CreateEmployee, UpdateEmployee } from '@/api/entities/auth';
-import {
-  createEmployee,
-  deleteEmployee,
-  getAllEmployees,
-  updateEmployee,
-} from '@/api/resources/auth';
 import { notifications } from '@mantine/notifications';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CreateEmployee, User as Employee, UpdateEmployee } from '@/api/entities/auth';
+import {
+  createDeleteMutationHook,
+  createGetQueryHook,
+  createPaginationQueryHook,
+  createPostMutationHook,
+  createPutMutationHook,
+  SortableQueryParams,
+} from '@/api/helpers';
 
-export function useGetEmployees() {
-  return useQuery({
+// ============================================================================
+// QUERIES
+// ============================================================================
+
+export const useGetEmployeeList = createPaginationQueryHook<typeof Employee, SortableQueryParams>({
+  endpoint: '/auth/employees',
+  dataSchema: Employee,
+  rQueryParams: {
     queryKey: ['employees'],
-    queryFn: getAllEmployees,
-  });
-}
+  },
+});
 
-export function useCreateEmployee() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: ReturnType<typeof CreateEmployee.parse>) => createEmployee(data),
+// (Optional – only if you have /employees/:id)
+export const useGetEmployee = createGetQueryHook({
+  endpoint: '/auth/employees/:id',
+  responseSchema: Employee,
+  rQueryParams: {
+    queryKey: ['employee'],
+  },
+});
+
+// ============================================================================
+// MUTATIONS
+// ============================================================================
+
+export const useCreateEmployee = createPostMutationHook({
+  endpoint: '/auth/employees',
+  bodySchema: CreateEmployee,
+
+  rMutationParams: {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
       notifications.show({
         title: 'Success',
         message: 'Employee created successfully',
         color: 'green',
       });
     },
-    onError: () => {
+    onError: (error) => {
       notifications.show({
         title: 'Error',
-        message: 'Failed to create employee',
+        message: error.message,
         color: 'red',
       });
     },
-  });
-}
+  },
+});
 
-export function useUpdateEmployee() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ReturnType<typeof UpdateEmployee.parse> }) =>
-      updateEmployee(id, data),
+export const useUpdateEmployee = createPutMutationHook({
+  endpoint: '/auth/employees/:id',
+  bodySchema: UpdateEmployee,
+
+  rMutationParams: {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
       notifications.show({
         title: 'Success',
         message: 'Employee updated successfully',
         color: 'green',
       });
     },
-    onError: () => {
+    onError: (error) => {
       notifications.show({
         title: 'Error',
-        message: 'Failed to update employee',
+        message: error.message,
         color: 'red',
       });
     },
-  });
-}
+  },
+});
 
-export function useDeleteEmployee() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ route }: { route: { id: string } }) => deleteEmployee(route.id),
+export const useDeleteEmployee = createDeleteMutationHook({
+  endpoint: '/auth/employees/:id',
+
+  rMutationParams: {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['employees'] });
       notifications.show({
         title: 'Success',
         message: 'Employee deleted successfully',
         color: 'green',
       });
     },
-    onError: () => {
+    onError: (error) => {
       notifications.show({
         title: 'Error',
-        message: 'Failed to delete employee',
+        message: error.message,
         color: 'red',
       });
     },
-  });
-}
+  },
+});
