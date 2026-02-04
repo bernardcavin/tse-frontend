@@ -1,6 +1,6 @@
 export const app = {
   name: 'SIGAP Ops',
-  apiBaseUrl: 'https://api.tsehub.com',
+  apiBaseUrl: 'https://api.dev-apetrol.site',
   fakeBackend: false,
   redirectQueryParamName: 'r',
   accessTokenStoreKey: 'access_token',
