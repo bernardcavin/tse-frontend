@@ -98,7 +98,14 @@ export const MANAGER_MENUS: SideLink[] = [
     href: paths.manager.requests,
     icon: icons.fileText,
   },
+  {
+    title: 'Tasks',
+    label: 'Tasks',
+    href: paths.manager.tasks,
+    icon: icons.tasks,
+  },
 ];
+
 
 // Employee menus
 export const EMPLOYEE_MENUS: SideLink[] = [
@@ -150,7 +157,14 @@ export const EMPLOYEE_MENUS: SideLink[] = [
     href: paths.employee.requests,
     icon: icons.fileText,
   },
+  {
+    title: 'Tasks',
+    label: 'Tasks',
+    href: paths.employee.tasks,
+    icon: icons.tasks,
+  },
 ];
+
 
 /**
  * Get menus based on user role and department

@@ -1,23 +1,28 @@
+import { useAuth } from '@/hooks';
 import { useCheckIn, useCheckOut, useGetAttendanceStatus } from '@/hooks/api/attendance';
 import { paths } from '@/routes';
 import {
-    Alert,
-    Badge,
-    Box,
-    Button,
-    Card,
-    Center,
-    Group,
-    Loader,
-    Stack,
-    Text,
-    Title
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Center,
+  Group,
+  Loader,
+  Stack,
+  Text,
+  Title
 } from '@mantine/core';
-import { IconAlertCircle, IconCheck, IconMapPin, IconQrcode } from '@tabler/icons-react';
+import { useDisclosure } from '@mantine/hooks';
+import { IconAlertCircle, IconCheck, IconFileDescription, IconMapPin, IconQrcode } from '@tabler/icons-react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { useEffect, useState } from 'react';
+import { LeaveRequestModal } from '../leave-management/leave-request-modal';
 
 export function EmployeeCheckIn() {
+  const { user } = useAuth();
+  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [scannerEnabled, setScannerEnabled] = useState(false);
@@ -165,7 +170,7 @@ export function EmployeeCheckIn() {
       </Card>
 
       <Group justify="flex-end">
-        <Button component="a" href={paths.employee.attendanceHistory} variant="outline">
+        <Button component="a" href={user?.role === 'MANAGER' ? paths.manager.attendanceHistory : paths.employee.attendanceHistory} variant="outline">
           View My Attendance History
         </Button>
       </Group>
@@ -208,6 +213,24 @@ export function EmployeeCheckIn() {
           )}
         </Stack>
       </Card>
+
+      {/* Leave Request Button */}
+      <Card shadow="sm" padding="lg">
+        <Stack gap="md">
+            <Group>
+                <IconFileDescription size={24} />
+                <Title order={3}>Leave Request</Title>
+            </Group>
+            <Text size="sm" c="dimmed">
+                Need to take time off? Submit a leave request here.
+            </Text>
+            <Button variant="outline" onClick={openCreateModal}>
+                Request Leave
+            </Button>
+        </Stack>
+      </Card>
+
+      <LeaveRequestModal opened={createModalOpened} onClose={closeCreateModal} />
 
       {/* QR Scanner */}
       {!isCheckedIn && (

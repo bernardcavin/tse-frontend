@@ -15,6 +15,7 @@ export const User = z.object({
   emergency_contact_name: z.string().optional().nullable(),
   emergency_contact_phone: z.string().optional().nullable(),
   role: z.string(),
+  attachment_file_ids: z.array(z.string().uuid()).optional().nullable(),
 });
 
 export const CreateEmployee = z.object({
@@ -32,6 +33,7 @@ export const CreateEmployee = z.object({
   emergency_contact_phone: z.string().optional().nullable(),
   password: z.string(),
   role: z.string().default('EMPLOYEE'),
+  attachment_file_ids: z.array(z.string().uuid()).optional(),
 });
 
 export const UpdateEmployee = z.object({
@@ -49,6 +51,7 @@ export const UpdateEmployee = z.object({
   emergency_contact_phone: z.string().optional().nullable(),
   password: z.string().optional().nullable(),
   role: z.string().optional().nullable(),
+  attachment_file_ids: z.array(z.string().uuid()).optional(),
 });
 
 // Profile Update Schema (personal data only, no employment info)

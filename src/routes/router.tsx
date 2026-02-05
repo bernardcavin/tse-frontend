@@ -99,6 +99,10 @@ const router = createBrowserRouter([
         element: LazyPage(() => import('@/pages/attendance/manager/check-in')),
       },
       {
+        path: paths.manager.attendanceHistory,
+        element: LazyPage(() => import('@/pages/attendance/manager/my-attendance')),
+      },
+      {
         path: paths.manager.attendanceManagement,
         element: LazyPage(() => import('@/pages/attendance/manager/management')),
       },
@@ -126,6 +130,12 @@ const router = createBrowserRouter([
         path: paths.manager.itTickets,
         element: LazyPage(() => import('@/pages/it-tickets')),
       },
+
+      /* ------------------------------- TASKS ------------------------------- */
+      {
+        path: paths.manager.tasks,
+        element: LazyPage(() => import('@/pages/tasks')),
+      },  
 
       /* ------------------------------- EXPEDITIONS ------------------------------- */
       {
@@ -211,6 +221,12 @@ const router = createBrowserRouter([
         path: paths.employee.itTickets,
         element: LazyPage(() => import('@/pages/it-tickets')),
       },
+
+      /* ------------------------------- TASKS ------------------------------- */
+      {
+        path: paths.employee.tasks,
+        element: LazyPage(() => import('@/pages/tasks')),
+      },  
 
       /* ------------------------------- EXPEDITIONS ------------------------------- */
       {

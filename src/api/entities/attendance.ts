@@ -54,3 +54,56 @@ export const AttendanceStatus_Response = z.object({
   active_check_in: AttendanceRecord.nullable(),
   is_checked_in: z.boolean(),
 });
+
+export const AttendanceRecordUpdate = z.object({
+  notes: z.string().optional().nullable(),
+});
+
+// Leave Management
+
+export const LeaveRequestType = z.enum([
+  'sick',
+  'paid',
+  'unpaid',
+  'maternity',
+  'paternity',
+  'other',
+]);
+
+export const LeaveRequestStatus = z.enum([
+  'pending',
+  'approved',
+  'rejected',
+  'cancelled',
+]);
+
+export const LeaveRequest = z.object({
+  id: z.string().uuid().optional().nullable(),
+  user_id: z.string().uuid(),
+  employee_name: z.string().optional().nullable(),
+  leave_type: LeaveRequestType,
+  start_date: z.coerce.date(),
+  end_date: z.coerce.date(),
+  reason: z.string(),
+  attachment_file_ids: z.array(z.string().uuid()).optional().nullable(),
+  status: LeaveRequestStatus.default('pending'),
+  rejection_reason: z.string().optional().nullable(),
+  manager_id: z.string().uuid().optional().nullable(),
+  manager_name: z.string().optional().nullable(),
+  approved_at: z.coerce.date().optional().nullable(),
+  created_at: z.coerce.date().optional().nullable(),
+  updated_at: z.coerce.date().optional().nullable(),
+});
+
+export const LeaveRequestCreate = z.object({
+  leave_type: LeaveRequestType,
+  start_date: z.coerce.date(),
+  end_date: z.coerce.date(),
+  reason: z.string().min(1, 'Reason is required'),
+  attachment_file_ids: z.array(z.string().uuid()).optional().default([]),
+});
+
+export const LeaveRequestUpdate = z.object({
+  status: LeaveRequestStatus,
+  rejection_reason: z.string().optional().nullable(),
+});

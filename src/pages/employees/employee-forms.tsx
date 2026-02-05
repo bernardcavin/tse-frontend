@@ -1,23 +1,26 @@
-import { useEffect } from 'react';
-import { zodResolver } from 'mantine-form-zod-resolver';
-import z from 'zod';
+import { CreateEmployee, UpdateEmployee } from '@/api/entities/auth';
+import { FormSection } from '@/components/form-section';
+import { FileUploadButton } from '@/components/forms/file-upload';
+import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
+import { FormProvider } from '@/components/forms/form-provider';
+import { useCreateEmployee, useGetEmployee, useUpdateEmployee } from '@/hooks/api/employees';
+import { emptyStringToNull } from '@/utilities/object';
 import {
-  Button,
-  Grid,
-  Group,
-  PasswordInput,
-  Select,
-  Stack,
-  Textarea,
-  TextInput,
+    Button,
+    Grid,
+    Group,
+    PasswordInput,
+    Select,
+    Stack,
+    Textarea,
+    TextInput,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
-import { CreateEmployee, UpdateEmployee } from '@/api/entities/auth';
-import { FormSection } from '@/components/form-section';
-import { useCreateEmployee, useGetEmployee, useUpdateEmployee } from '@/hooks/api/employees';
-import { emptyStringToNull } from '@/utilities/object';
+import { zodResolver } from 'mantine-form-zod-resolver';
+import { useEffect } from 'react';
+import z from 'zod';
 
 const DEPARTMENT_OPTIONS = [
   { value: 'HSE', label: 'HSE' },
@@ -50,6 +53,9 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
     validate: zodResolver(isEditing ? UpdateEmployee : CreateEmployee),
   });
 
+  const fileIdManager = useFileIdManager();
+  const { updateFilesMetadata } = fileIdManager;
+
   useEffect(() => {
     if (employee && isEditing) {
       form.setValues({
@@ -67,6 +73,7 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
         emergency_contact_phone: employee.emergency_contact_phone,
         password: '', // Don't pre-fill password for security
         role: employee.role as 'EMPLOYEE' | 'MANAGER',
+        attachment_file_ids: employee.attachment_file_ids || [],
       });
     }
   }, [employee, isEditing]);
@@ -77,6 +84,7 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
         { route: { id: employeeId }, variables: emptyStringToNull(values) },
         {
           onSuccess: () => {
+            updateFilesMetadata();
             modals.close('employee-edit');
             onSuccess?.();
           },
@@ -85,6 +93,7 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
     } else {
       createEmployee(values, {
         onSuccess: () => {
+          updateFilesMetadata();
           modals.close('employee-create');
           onSuccess?.();
         },
@@ -93,195 +102,207 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
   });
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Stack gap="md">
-        {/* Basic Information */}
-        <FormSection title="Basic Information">
-          <Grid>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Full Name"
-                placeholder="e.g. John Doe"
-                description="Employee's full name"
-                required={!isEditing}
-                {...form.getInputProps('name')}
-              />
-            </Grid.Col>
+    <FormProvider form={form} onSubmit={handleSubmit}>
+      <FileIdProvider fileIdManager={fileIdManager}>
+        <Stack gap="md">
+          {/* Basic Information */}
+          <FormSection title="Basic Information">
+            <Grid>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Full Name"
+                  placeholder="e.g. John Doe"
+                  description="Employee's full name"
+                  required={!isEditing}
+                  {...form.getInputProps('name')}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Username"
-                placeholder="e.g. johndoe"
-                description="Used for login"
-                required={!isEditing}
-                {...form.getInputProps('username')}
-              />
-            </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Username"
+                  placeholder="e.g. johndoe"
+                  description="Used for login"
+                  required={!isEditing}
+                  {...form.getInputProps('username')}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Employee Number"
-                placeholder="e.g. EMP-001"
-                description="Unique employee identifier"
-                {...form.getInputProps('employee_num')}
-              />
-            </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Employee Number"
+                  placeholder="e.g. EMP-001"
+                  description="Unique employee identifier"
+                  {...form.getInputProps('employee_num')}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="NIK (National ID)"
-                placeholder="e.g. 1234567890123456"
-                description="Indonesian National ID number"
-                {...form.getInputProps('nik')}
-              />
-            </Grid.Col>
-          </Grid>
-        </FormSection>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="NIK (National ID)"
+                  placeholder="e.g. 1234567890123456"
+                  description="Indonesian National ID number"
+                  {...form.getInputProps('nik')}
+                />
+              </Grid.Col>
+            </Grid>
+          </FormSection>
 
-        {/* Contact Information */}
-        <FormSection title="Contact Information">
-          <Grid>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Email Address"
-                placeholder="e.g. john.doe@company.com"
-                type="email"
-                description="Work email address"
-                {...form.getInputProps('email')}
-              />
-            </Grid.Col>
+          {/* Contact Information */}
+          <FormSection title="Contact Information">
+            <Grid>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Email Address"
+                  placeholder="e.g. john.doe@company.com"
+                  type="email"
+                  description="Work email address"
+                  {...form.getInputProps('email')}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Phone Number"
-                placeholder="e.g. +62 812-3456-7890"
-                type="tel"
-                description="Mobile or work phone"
-                {...form.getInputProps('phone_number')}
-              />
-            </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Phone Number"
+                  placeholder="e.g. +62 812-3456-7890"
+                  type="tel"
+                  description="Mobile or work phone"
+                  {...form.getInputProps('phone_number')}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={12}>
-              <Textarea
-                label="Address"
-                placeholder="Enter full address"
-                description="Residential address"
-                minRows={2}
-                {...form.getInputProps('address')}
-              />
-            </Grid.Col>
-          </Grid>
-        </FormSection>
+              <Grid.Col span={12}>
+                <Textarea
+                  label="Address"
+                  placeholder="Enter full address"
+                  description="Residential address"
+                  minRows={2}
+                  {...form.getInputProps('address')}
+                />
+              </Grid.Col>
+            </Grid>
+          </FormSection>
 
-        {/* Employment Information */}
-        <FormSection title="Employment Information">
-          <Grid>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Position / Job Title"
-                placeholder="e.g. Senior Engineer, Manager"
-                description="Current job position"
-                {...form.getInputProps('position')}
-              />
-            </Grid.Col>
+          {/* Employment Information */}
+          <FormSection title="Employment Information">
+            <Grid>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Position / Job Title"
+                  placeholder="e.g. Senior Engineer, Manager"
+                  description="Current job position"
+                  {...form.getInputProps('position')}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Department"
-                placeholder="Select department"
-                description="Employee's department"
-                data={DEPARTMENT_OPTIONS}
-                searchable
-                clearable
-                {...form.getInputProps('department')}
-                comboboxProps={{ zIndex: 2001 }}
-              />
-            </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <Select
+                  label="Department"
+                  placeholder="Select department"
+                  description="Employee's department"
+                  data={DEPARTMENT_OPTIONS}
+                  searchable
+                  clearable
+                  {...form.getInputProps('department')}
+                  comboboxProps={{ zIndex: 2001 }}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <DatePickerInput
-                label="Hire Date"
-                placeholder="Select hire date"
-                description="Date employee was hired"
-                valueFormat="DD/MM/YYYY"
-                clearable
-                {...form.getInputProps('hire_date')}
-                popoverProps={{ zIndex: 2001 }}
-              />
-            </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <DatePickerInput
+                  label="Hire Date"
+                  placeholder="Select hire date"
+                  description="Date employee was hired"
+                  valueFormat="DD/MM/YYYY"
+                  clearable
+                  {...form.getInputProps('hire_date')}
+                  popoverProps={{ zIndex: 2001 }}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <Select
-                label="Role"
-                placeholder="Select role"
-                description="System access level"
-                required
-                data={[
-                  { value: 'EMPLOYEE', label: 'Employee' },
-                  { value: 'MANAGER', label: 'Manager' },
-                ]}
-                {...form.getInputProps('role')}
-                comboboxProps={{ zIndex: 2001 }}
-              />
-            </Grid.Col>
-          </Grid>
-        </FormSection>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <Select
+                  label="Role"
+                  placeholder="Select role"
+                  description="System access level"
+                  required
+                  data={[
+                    { value: 'EMPLOYEE', label: 'Employee' },
+                    { value: 'MANAGER', label: 'Manager' },
+                  ]}
+                  {...form.getInputProps('role')}
+                  comboboxProps={{ zIndex: 2001 }}
+                />
+              </Grid.Col>
+            </Grid>
+          </FormSection>
 
-        {/* Emergency Contact */}
-        <FormSection title="Emergency Contact">
-          <Grid>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Emergency Contact Name"
-                placeholder="e.g. Jane Doe (Spouse)"
-                description="Name of person to contact in emergency"
-                {...form.getInputProps('emergency_contact_name')}
-              />
-            </Grid.Col>
+          {/* Emergency Contact */}
+          <FormSection title="Emergency Contact">
+            <Grid>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Emergency Contact Name"
+                  placeholder="e.g. Jane Doe (Spouse)"
+                  description="Name of person to contact in emergency"
+                  {...form.getInputProps('emergency_contact_name')}
+                />
+              </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Emergency Contact Phone"
-                placeholder="e.g. +62 812-9876-5432"
-                type="tel"
-                description="Emergency contact's phone number"
-                {...form.getInputProps('emergency_contact_phone')}
-              />
-            </Grid.Col>
-          </Grid>
-        </FormSection>
+              <Grid.Col span={{ base: 12, sm: 6 }}>
+                <TextInput
+                  label="Emergency Contact Phone"
+                  placeholder="e.g. +62 812-9876-5432"
+                  type="tel"
+                  description="Emergency contact's phone number"
+                  {...form.getInputProps('emergency_contact_phone')}
+                />
+              </Grid.Col>
+            </Grid>
+          </FormSection>
 
-        {/* Credentials */}
-        <FormSection title="Credentials">
-          <Grid>
-            <Grid.Col span={12}>
-              <PasswordInput
-                label="Password"
-                placeholder={isEditing ? 'Leave blank to keep current password' : 'Enter password'}
-                description={
-                  isEditing
-                    ? 'Only enter if you want to change the password'
-                    : 'Password for login access'
-                }
-                required={!isEditing}
-                {...form.getInputProps('password')}
-              />
-            </Grid.Col>
-          </Grid>
-        </FormSection>
+          {/* Documents */}
+          <FormSection title="Documents" withHide>
+            <FileUploadButton
+              name="attachment_file_ids"
+              label="Attachments"
+              multiple
+              description="Upload certificates, CV, and other documents"
+            />
+          </FormSection>
 
-        <Group justify="flex-end" mt="md">
-          <Button
-            variant="subtle"
-            onClick={() => modals.close(isEditing ? 'employee-edit' : 'employee-create')}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" loading={isCreating || isUpdating}>
-            {isEditing ? 'Update' : 'Create'} Employee
-          </Button>
-        </Group>
-      </Stack>
-    </form>
+          {/* Credentials */}
+          <FormSection title="Credentials">
+            <Grid>
+              <Grid.Col span={12}>
+                <PasswordInput
+                  label="Password"
+                  placeholder={isEditing ? 'Leave blank to keep current password' : 'Enter password'}
+                  description={
+                    isEditing
+                      ? 'Only enter if you want to change the password'
+                      : 'Password for login access'
+                  }
+                  required={!isEditing}
+                  {...form.getInputProps('password')}
+                />
+              </Grid.Col>
+            </Grid>
+          </FormSection>
+
+          <Group justify="flex-end" mt="md">
+            <Button
+              variant="subtle"
+              onClick={() => modals.close(isEditing ? 'employee-edit' : 'employee-create')}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" loading={isCreating || isUpdating}>
+              {isEditing ? 'Update' : 'Create'} Employee
+            </Button>
+          </Group>
+        </Stack>
+      </FileIdProvider>
+    </FormProvider>
   );
 }

@@ -17,6 +17,7 @@ export const paths = {
     employees: '/manager/employees',
     employeeDetail: (id: string) => `/manager/employees/${id}`,
     attendance: '/manager/attendance',
+    attendanceHistory: '/manager/attendance/history',
     attendanceCheckIn: '/manager/attendance/check-in',
     attendanceManagement: '/manager/attendance/management',
     safetyObservations: '/manager/safety-observations',
@@ -28,7 +29,9 @@ export const paths = {
     requestNew: '/manager/requests/new',
     requestDetail: (id: string) => `/manager/requests/${id}`,
     profile: '/manager/profile',
+    tasks: '/manager/tasks',
   },
+
   employee: {
     root: '/employee',
     home: '/employee/home',
@@ -45,5 +48,7 @@ export const paths = {
     requestNew: '/employee/requests/new',
     requestDetail: (id: string) => `/employee/requests/${id}`,
     profile: '/employee/profile',
+    tasks: '/employee/tasks',
   },
+
 };

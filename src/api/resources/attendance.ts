@@ -1,10 +1,11 @@
 import { BackendResponse } from '@/api/entities';
 import {
-    AttendanceLocation,
-    AttendanceRecord,
-    AttendanceStatus_Response,
-    CheckInRequest,
-    CheckOutRequest,
+  AttendanceLocation,
+  AttendanceRecord,
+  AttendanceRecordUpdate,
+  AttendanceStatus_Response,
+  CheckInRequest,
+  CheckOutRequest
 } from '@/api/entities/attendance';
 import { client } from '../axios';
 
@@ -54,4 +55,12 @@ export async function checkOut(data: ReturnType<typeof CheckOutRequest.parse>) {
 export async function getAttendanceStatus() {
   const response = await client.get('attendance/status');
   return AttendanceStatus_Response.parse(BackendResponse.parse(response.data).data);
+}
+
+export async function updateAttendanceRecord(
+  id: string,
+  data: ReturnType<typeof AttendanceRecordUpdate.parse>
+) {
+  const response = await client.put(`attendance/records/${id}`, data);
+  return AttendanceRecord.parse(BackendResponse.parse(response.data).data);
 }

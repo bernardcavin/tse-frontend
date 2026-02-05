@@ -1,22 +1,24 @@
 import {
-    AttendanceLocation,
-    AttendanceRecord,
-    AttendanceStatus_Response
+  AttendanceLocation,
+  AttendanceRecord,
+  AttendanceRecordUpdate,
+  AttendanceStatus_Response,
+  CheckInRequest,
+  CheckOutRequest,
+  LeaveRequest,
+  LeaveRequestCreate,
+  LeaveRequestUpdate,
 } from '@/api/entities/attendance';
 import {
-    createGetQueryHook,
-    createPaginationQueryHook,
-    SortableQueryParams,
+  createDeleteMutationHook,
+  createGetQueryHook,
+  createPaginationQueryHook,
+  createPostMutationHook,
+  createPutMutationHook,
+  SortableQueryParams,
 } from '@/api/helpers';
-import {
-    checkIn,
-    checkOut,
-    createAttendanceLocation,
-    deleteAttendanceLocation,
-    updateAttendanceLocation,
-} from '@/api/resources/attendance';
 import { notifications } from '@mantine/notifications';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 
 // ============================================================================
 // ATTENDANCE LOCATIONS
@@ -37,12 +39,12 @@ export const useGetAttendanceLocation = createGetQueryHook({
   rQueryParams: { queryKey: ['attendance-location'] },
 });
 
-export function useCreateAttendanceLocation() {
-  const queryClient = useQueryClient();
+export const useCreateAttendanceLocation = createPostMutationHook({
+  endpoint: '/attendance/locations',
+  bodySchema: AttendanceLocation,
 
-  return useMutation({
-    mutationFn: (data: any) => createAttendanceLocation(data.variables),
-    onSuccess: () => {
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
       queryClient.invalidateQueries({ queryKey: ['attendance-locations'] });
       notifications.show({
         title: 'Success',
@@ -50,18 +52,18 @@ export function useCreateAttendanceLocation() {
         color: 'green',
       });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       notifications.show({ message: error.message, color: 'red' });
     },
-  });
-}
+  },
+});
 
-export function useUpdateAttendanceLocation({ route }: { route: { id: string } }) {
-  const queryClient = useQueryClient();
+export const useUpdateAttendanceLocation = createPutMutationHook({
+  endpoint: '/attendance/locations/:id',
+  bodySchema: AttendanceLocation,
 
-  return useMutation({
-    mutationFn: (data: any) => updateAttendanceLocation(route.id, data.variables),
-    onSuccess: () => {
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
       queryClient.invalidateQueries({ queryKey: ['attendance-locations'] });
       queryClient.invalidateQueries({ queryKey: ['attendance-location'] });
       notifications.show({
@@ -70,18 +72,17 @@ export function useUpdateAttendanceLocation({ route }: { route: { id: string } }
         color: 'green',
       });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       notifications.show({ message: error.message, color: 'red' });
     },
-  });
-}
+  },
+});
 
-export function useDeleteAttendanceLocation() {
-  const queryClient = useQueryClient();
+export const useDeleteAttendanceLocation = createDeleteMutationHook({
+  endpoint: '/attendance/locations/:id',
 
-  return useMutation({
-    mutationFn: (data: { route: { id: string } }) => deleteAttendanceLocation(data.route.id),
-    onSuccess: () => {
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
       queryClient.invalidateQueries({ queryKey: ['attendance-locations'] });
       notifications.show({
         title: 'Success',
@@ -89,11 +90,11 @@ export function useDeleteAttendanceLocation() {
         color: 'green',
       });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       notifications.show({ message: error.message, color: 'red' });
     },
-  });
-}
+  },
+});
 
 // ============================================================================
 // ATTENDANCE RECORDS
@@ -108,12 +109,12 @@ export const useGetAttendanceRecords = createPaginationQueryHook<
   rQueryParams: { queryKey: ['attendance-records'] },
 });
 
-export function useCheckIn() {
-  const queryClient = useQueryClient();
+export const useCheckIn = createPostMutationHook({
+  endpoint: '/attendance/check-in',
+  bodySchema: CheckInRequest,
 
-  return useMutation({
-    mutationFn: (data: any) => checkIn(data.variables),
-    onSuccess: () => {
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
       queryClient.invalidateQueries({ queryKey: ['attendance-records'] });
       queryClient.invalidateQueries({ queryKey: ['attendance-status'] });
       notifications.show({
@@ -122,22 +123,22 @@ export function useCheckIn() {
         color: 'green',
       });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       notifications.show({
         title: 'Error',
         message: error.message,
         color: 'red',
       });
     },
-  });
-}
+  },
+});
 
-export function useCheckOut() {
-  const queryClient = useQueryClient();
+export const useCheckOut = createPostMutationHook({
+  endpoint: '/attendance/check-out',
+  bodySchema: CheckOutRequest,
 
-  return useMutation({
-    mutationFn: (data: any) => checkOut(data.variables),
-    onSuccess: () => {
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
       queryClient.invalidateQueries({ queryKey: ['attendance-records'] });
       queryClient.invalidateQueries({ queryKey: ['attendance-status'] });
       notifications.show({
@@ -146,22 +147,95 @@ export function useCheckOut() {
         color: 'green',
       });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       notifications.show({
         title: 'Error',
         message: error.message,
         color: 'red',
       });
     },
-  });
-}
+  },
+});
 
 export const useGetAttendanceStatus = createGetQueryHook({
   endpoint: '/attendance/status',
   responseSchema: AttendanceStatus_Response,
   rQueryParams: {
     queryKey: ['attendance-status'],
-    refetchInterval: 10000, // Refetch every 10 seconds
+    refetchInterval: 10000,
   },
 });
 
+export const useUpdateAttendanceRecord = createPutMutationHook({
+  endpoint: '/attendance/records/:id',
+  bodySchema: AttendanceRecordUpdate,
+
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
+      queryClient.invalidateQueries({ queryKey: ['attendance-records'] });
+      notifications.show({
+        title: 'Success',
+        message: 'Attendance record updated successfully',
+        color: 'green',
+      });
+    },
+    onError: (error) => {
+      notifications.show({
+        title: 'Error',
+        message: error.message,
+        color: 'red',
+      });
+    },
+  },
+});
+
+// ============================================================================
+// LEAVE REQUESTS
+// ============================================================================
+
+export const useGetLeaveRequests = createPaginationQueryHook<
+  typeof LeaveRequest,
+  SortableQueryParams
+>({
+  endpoint: '/attendance/leaves',
+  dataSchema: LeaveRequest,
+  rQueryParams: { queryKey: ['leave-requests'] },
+});
+
+export const useCreateLeaveRequest = createPostMutationHook({
+  endpoint: '/attendance/leaves',
+  bodySchema: LeaveRequestCreate,
+
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      notifications.show({
+        title: 'Success',
+        message: 'Leave request submitted successfully',
+        color: 'green',
+      });
+    },
+    onError: (error) => {
+      notifications.show({ message: error.message, color: 'red' });
+    },
+  },
+});
+
+export const useUpdateLeaveRequestStatus = createPutMutationHook({
+  endpoint: '/attendance/leaves/:id/status',
+  bodySchema: LeaveRequestUpdate,
+
+  rMutationParams: {
+    onSuccess: (data, variables, context, queryClient) => {
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      notifications.show({
+        title: 'Success',
+        message: 'Leave request status updated successfully',
+        color: 'green',
+      });
+    },
+    onError: (error) => {
+      notifications.show({ message: error.message, color: 'red' });
+    },
+  },
+});

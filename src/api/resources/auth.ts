@@ -46,3 +46,11 @@ export async function updateProfile(profile: ReturnType<typeof UpdateProfile.par
   const response = await client.put('auth/profile', profile);
   return User.parse(BackendResponse.parse(response.data).data);
 }
+
+// User Options
+export async function getUserOptions() {
+  const response = await client.get('auth/users/options');
+  const data = BackendResponse.parse(response.data).data;
+  return data as Array<{ label: string; value: string }>;
+}
+

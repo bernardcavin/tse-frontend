@@ -1,29 +1,4 @@
-import { useMemo, useState } from 'react';
-import {
-  IconCalendar,
-  IconClipboardList,
-  IconEye,
-  IconFileAlert,
-  IconTicket,
-  IconUser,
-  IconX,
-} from '@tabler/icons-react';
-import { DataTable } from 'mantine-datatable';
-import { useParams } from 'react-router-dom';
-import {
-  Badge,
-  Button,
-  Card,
-  Grid,
-  Group,
-  Loader,
-  SimpleGrid,
-  Stack,
-  Tabs,
-  Text,
-  Title,
-} from '@mantine/core';
-import { DatePickerInput, DateValue } from '@mantine/dates';
+import { FileDownloadButton } from '@/components/file-download';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { useGetAttendanceRecords } from '@/hooks/api/attendance';
@@ -32,6 +7,34 @@ import { useGetITTicketList } from '@/hooks/api/it-tickets';
 import { useGetSafetyObservationList } from '@/hooks/api/safety-observations';
 import { openSafetyObservationView } from '@/pages/safety-observations/safety-observations-modals';
 import { paths } from '@/routes';
+import {
+    Badge,
+    Button,
+    Card,
+    Grid,
+    Group,
+    Loader,
+    SimpleGrid,
+    Stack,
+    Table,
+    Tabs,
+    Text,
+    Title,
+} from '@mantine/core';
+import { DatePickerInput, DateValue } from '@mantine/dates';
+import {
+    IconCalendar,
+    IconClipboardList,
+    IconEye,
+    IconFileAlert,
+    IconPaperclip,
+    IconTicket,
+    IconUser,
+    IconX,
+} from '@tabler/icons-react';
+import { DataTable } from 'mantine-datatable';
+import { useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -408,8 +411,12 @@ export default function EmployeeDetailPage() {
             <Tabs.Tab value="safety-observations" leftSection={<IconFileAlert size={16} />}>
               Safety Observations
             </Tabs.Tab>
+
             <Tabs.Tab value="tickets" leftSection={<IconTicket size={16} />}>
               IT Tickets
+            </Tabs.Tab>
+            <Tabs.Tab value="documents" leftSection={<IconPaperclip size={16} />}>
+              Documents
             </Tabs.Tab>
           </Tabs.List>
 
@@ -699,6 +706,30 @@ export default function EmployeeDetailPage() {
                 </Stack>
               </Card>
             </Stack>
+          </Tabs.Panel>
+
+          {/* Documents Tab */}
+          <Tabs.Panel value="documents" pt="lg">
+            <Card padding="lg" radius="md" withBorder>
+              <Stack gap="md">
+                <Title order={4}>Employee Documents</Title>
+                {employee.attachment_file_ids && employee.attachment_file_ids.length > 0 ? (
+                  <Table>
+                    <Table.Tbody>
+                      {employee.attachment_file_ids.map((file_id: string) => (
+                        <Table.Tr key={file_id}>
+                          <Table.Td>
+                            <FileDownloadButton file_id={file_id} withFileInfo />
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                ) : (
+                  <Text c="dimmed">No documents uploaded for this employee.</Text>
+                )}
+              </Stack>
+            </Card>
           </Tabs.Panel>
         </Tabs>
       </Stack>

@@ -7,6 +7,8 @@ import {
     BsExclamationTriangleFill,
     BsFileText,
     BsGear,
+    BsListCheck,
+    BsPencil,
     BsPeopleFill,
     BsPerson,
     BsPersonVcard,
@@ -15,6 +17,7 @@ import {
     BsTools,
     BsTruck
 } from 'react-icons/bs';
+
 
 export const icons = {
   inventory: BsTools,
@@ -32,7 +35,10 @@ export const icons = {
   truck: BsTruck,
   fileText: BsFileText,
   clipboardCheck: BsClipboardCheck,
+  pencil: BsPencil,
+  tasks: BsListCheck,
 };
+
 
 export function DataIcon({ label }: { label: keyof typeof icons }) {
   return icons[label];
