@@ -1,3 +1,4 @@
+import { dateSchema } from '@/utilities/date';
 import { z } from 'zod';
 
 export enum TaskStatus {
@@ -22,8 +23,8 @@ export const Task = z.object({
   status: z.nativeEnum(TaskStatus),
   priority: z.nativeEnum(TaskPriority),
   
-  start_date: z.string(), // ISO date string YYYY-MM-DD
-  end_date: z.string(),   // ISO date string YYYY-MM-DD
+  start_date: dateSchema,
+  end_date: dateSchema,
   time_start: z.string().optional().nullable(),
   time_end: z.string().optional().nullable(),
   
@@ -45,8 +46,8 @@ export const CreateTaskPayload = z.object({
   status: z.nativeEnum(TaskStatus).optional(),
   priority: z.nativeEnum(TaskPriority).optional(),
   
-  start_date: z.string().or(z.date()),
-  end_date: z.string().or(z.date()),
+  start_date: dateSchema,
+  end_date: dateSchema,
   time_start: z.string().optional().nullable(),
   time_end: z.string().optional().nullable(),
   assignee_ids: z.array(z.string()).optional(),

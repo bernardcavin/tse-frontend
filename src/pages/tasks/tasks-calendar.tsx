@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 import { Calendar, dayjsLocalizer, View, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { openTaskEdit } from './tasks-modals';
+import { openTaskView } from './tasks-modals';
 
 // Setup the localizer for react-big-calendar
 const localizer = dayjsLocalizer(dayjs);
@@ -65,7 +65,7 @@ export function TasksCalendar() {
   };
 
   const handleSelectEvent = (event: CalendarEvent) => {
-    openTaskEdit(event.id, () => {});
+    openTaskView(event.id);
   };
 
   if (isLoading) {

@@ -9,7 +9,7 @@ import { Badge } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { DataTableColumn } from 'mantine-datatable';
 import { useCallback, useMemo } from 'react';
-import { openTaskCreate, openTaskEdit } from './tasks-modals';
+import { openTaskCreate, openTaskEdit, openTaskView } from './tasks-modals';
 
 export function TasksTable() {
   const { user } = useAuth();
@@ -104,6 +104,7 @@ export function TasksTable() {
         render: (row) => (
           <DataTable.Actions
             onEdit={() => openTaskEdit(row.id, refetch)}
+            onView={() => openTaskView(row.id)}
             onDelete={isManager ? () => handleDelete(row.id) : undefined}
           />
         ),

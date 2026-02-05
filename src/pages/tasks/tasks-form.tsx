@@ -3,16 +3,16 @@ import { getUserOptions } from '@/api/resources/auth';
 
 import { DataMultiSelect } from '@/components/data-multi-select';
 import { FormSection } from '@/components/form-section';
-import { Select } from '@/components/forms';
+import { DatePickerInput, Select, TimeInput } from '@/components/forms';
 import { FileUploadButton } from '@/components/forms/file-upload';
 import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
 import { Textarea } from '@/components/forms/text-area';
 import { TextInput } from '@/components/forms/text-input';
 import { useCreateTask, useGetTask, useUpdateTask } from '@/hooks/api/tasks';
+import { dateSchema } from '@/utilities/date';
 import { handleFormErrors } from '@/utilities/form';
 import { Button, Grid, Group, Loader, Stack } from '@mantine/core';
-import { DatePickerInput, TimeInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
 import { zodResolver } from 'mantine-form-zod-resolver';
@@ -21,26 +21,26 @@ import { z } from 'zod';
 
 const TaskValidation = z.object({
   title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
+  description: z.string().optional().nullable(),
   status: z.nativeEnum(TaskStatus),
   priority: z.nativeEnum(TaskPriority),
-  start_date: z.date({ required_error: 'Start Date is required' }),
-  end_date: z.date({ required_error: 'End Date is required' }),
-  time_start: z.string().optional(),
-  time_end: z.string().optional(),
+  start_date: dateSchema,
+  end_date: dateSchema,
+  time_start: z.string().optional().nullable(),
+  time_end: z.string().optional().nullable(),
   assignee_ids: z.array(z.string()).min(1, 'Select at least one assignee'),
   attachment_file_ids: z.array(z.string()).optional(),
 });
 
 const initialValues = {
   title: '',
-  description: '',
+  description: null,
   status: TaskStatus.PLANNED,
   priority: TaskPriority.MEDIUM,
   start_date: new Date(),
   end_date: new Date(),
-  time_start: '',
-  time_end: '',
+  time_start: null,
+  time_end: null,
   assignee_ids: [],
   attachment_file_ids: [],
 };
@@ -209,6 +209,7 @@ export function EditTaskForm({ onSubmit, id }: EditTaskFormProps) {
 
   useEffect(() => {
     if (task) {
+      console.log(task)
       form.setValues(task);
     }
   }, [task]);

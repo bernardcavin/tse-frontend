@@ -1,13 +1,14 @@
+import { useMemo, useState } from 'react';
+import { DataTableColumn } from 'mantine-datatable';
+import z from 'zod';
+import { ActionIcon, Badge, Button, Group, Modal, Textarea, Tooltip } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { AttendanceRecord } from '@/api/entities/attendance';
 import { usePagination } from '@/api/helpers';
 import { DataTable } from '@/components/data-table';
 import { useGetAttendanceRecords, useUpdateAttendanceRecord } from '@/hooks/api/attendance';
+import { formatDateTimeReadable } from '@/utilities/date';
 import { icons } from '@/utilities/icons';
-import { ActionIcon, Badge, Button, Group, Modal, Textarea, Tooltip } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { DataTableColumn } from 'mantine-datatable';
-import { useMemo, useState } from 'react';
-import z from 'zod';
 
 type AttendanceRecordType = z.infer<typeof AttendanceRecord>;
 
@@ -61,27 +62,16 @@ export function AttendanceRecordsTable({ userId }: AttendanceRecordsTableProps) 
     }
   };
 
-  const formatDateTime24Hour = (date: Date) => {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  };
-
   const calculateDuration = (checkIn: Date, checkOut: Date | null) => {
     if (!checkOut) return 'In progress';
-    
+
     const start = new Date(checkIn);
     const end = new Date(checkOut);
     const durationMs = end.getTime() - start.getTime();
-    
+
     const hours = Math.floor(durationMs / (1000 * 60 * 60));
     const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     return `${hours}h ${minutes}m`;
   };
 
@@ -101,14 +91,14 @@ export function AttendanceRecordsTable({ userId }: AttendanceRecordsTableProps) 
         accessor: 'check_in_time',
         title: 'Check In',
         sortable: true,
-        render: ({ check_in_time }) => formatDateTime24Hour(check_in_time),
+        render: ({ check_in_time }) => formatDateTimeReadable(check_in_time),
       },
       {
         accessor: 'check_out_time',
         title: 'Check Out',
         sortable: true,
         render: ({ check_out_time }) =>
-          check_out_time ? formatDateTime24Hour(check_out_time) : '-',
+          check_out_time ? formatDateTimeReadable(check_out_time) : '-',
       },
       {
         accessor: 'duration',
@@ -130,27 +120,35 @@ export function AttendanceRecordsTable({ userId }: AttendanceRecordsTableProps) 
         accessor: 'notes',
         title: 'Notes',
         render: (record) => (
-            <Group gap="xs" style={{ cursor: 'pointer' }} onClick={() => handleEditNotes(record)}>
-                {record.notes ? (
-                    <Tooltip label={record.notes} multiline w={200}>
-                        <div style={{
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            maxWidth: 150 
-                        }}>
-                            {record.notes}
-                        </div>
-                    </Tooltip>
-                ) : (
-                    <span style={{ color: 'var(--mantine-color-dimmed)', fontStyle: 'italic', fontSize: '0.9em' }}>
-                        Add note...
-                    </span>
-                )}
-                <ActionIcon variant="subtle" size="sm" color="blue">
-                    <icons.pencil size={14} />
-                </ActionIcon>
-            </Group>
+          <Group gap="xs" style={{ cursor: 'pointer' }} onClick={() => handleEditNotes(record)}>
+            {record.notes ? (
+              <Tooltip label={record.notes} multiline w={200}>
+                <div
+                  style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: 150,
+                  }}
+                >
+                  {record.notes}
+                </div>
+              </Tooltip>
+            ) : (
+              <span
+                style={{
+                  color: 'var(--mantine-color-dimmed)',
+                  fontStyle: 'italic',
+                  fontSize: '0.9em',
+                }}
+              >
+                Add note...
+              </span>
+            )}
+            <ActionIcon variant="subtle" size="sm" color="blue">
+              <icons.pencil size={14} />
+            </ActionIcon>
+          </Group>
         ),
       },
     ],
@@ -189,15 +187,19 @@ export function AttendanceRecordsTable({ userId }: AttendanceRecordsTableProps) 
 
       <Modal opened={opened} onClose={close} title="Edit Attendance Notes">
         <Textarea
-            label="Notes"
-            placeholder="Add notes about this attendance record (e.g., late arrival, early departure)"
-            minRows={3}
-            value={notes}
-            onChange={(event) => setNotes(event.currentTarget.value)}
+          label="Notes"
+          placeholder="Add notes about this attendance record (e.g., late arrival, early departure)"
+          minRows={3}
+          value={notes}
+          onChange={(event) => setNotes(event.currentTarget.value)}
         />
         <Group justify="flex-end" mt="md">
-            <Button variant="default" onClick={close}>Cancel</Button>
-            <Button onClick={handleSaveNotes} loading={updateMutation.isPending}>Save</Button>
+          <Button variant="default" onClick={close}>
+            Cancel
+          </Button>
+          <Button onClick={handleSaveNotes} loading={updateMutation.isPending}>
+            Save
+          </Button>
         </Group>
       </Modal>
     </>

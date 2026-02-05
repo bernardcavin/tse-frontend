@@ -1,5 +1,6 @@
 import { modals } from '@mantine/modals';
 import { CreateTaskForm, EditTaskForm } from './tasks-form';
+import { ViewTaskForm } from './tasks-view';
 
 
 
@@ -25,6 +26,14 @@ export const openTaskEdit = (id: string, refetch: () => void) => {
             modals.closeAll();
         }} />
     ),
+    size: 'xl',
+  });
+};
+
+export const openTaskView = (id: string) => {
+  modals.open({
+    title: 'View Task',
+    children: <ViewTaskForm id={id} />,
     size: 'xl',
   });
 };

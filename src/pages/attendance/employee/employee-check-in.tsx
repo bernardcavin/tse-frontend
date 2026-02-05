@@ -1,6 +1,12 @@
-import { useAuth } from '@/hooks';
-import { useCheckIn, useCheckOut, useGetAttendanceStatus } from '@/hooks/api/attendance';
-import { paths } from '@/routes';
+import { useEffect, useState } from 'react';
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconFileDescription,
+  IconMapPin,
+  IconQrcode,
+} from '@tabler/icons-react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 import {
   Alert,
   Badge,
@@ -12,23 +18,29 @@ import {
   Loader,
   Stack,
   Text,
-  Title
+  Title,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconAlertCircle, IconCheck, IconFileDescription, IconMapPin, IconQrcode } from '@tabler/icons-react';
-import { Scanner } from '@yudiel/react-qr-scanner';
-import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks';
+import { useCheckIn, useCheckOut, useGetAttendanceStatus } from '@/hooks/api/attendance';
+import { paths } from '@/routes';
+import { formatDateTimeReadable } from '@/utilities/date';
 import { LeaveRequestModal } from '../leave-management/leave-request-modal';
 
 export function EmployeeCheckIn() {
   const { user } = useAuth();
-  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
+  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
+    useDisclosure(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [scannerEnabled, setScannerEnabled] = useState(false);
   const [scannedData, setScannedData] = useState<any>(null);
 
-  const { data: statusData, isLoading: statusLoading, refetch: refetchStatus } = useGetAttendanceStatus();
+  const {
+    data: statusData,
+    isLoading: statusLoading,
+    refetch: refetchStatus,
+  } = useGetAttendanceStatus();
   const { mutate: checkIn, isPending: checkingIn } = useCheckIn();
   const { mutate: checkOut, isPending: checkingOut } = useCheckOut();
 
@@ -59,7 +71,7 @@ export function EmployeeCheckIn() {
 
     try {
       const qrData = JSON.parse(result[0].rawValue);
-      
+
       if (qrData.type !== 'attendance') {
         alert('Invalid QR code. Please scan an attendance location QR code.');
         return;
@@ -135,7 +147,8 @@ export function EmployeeCheckIn() {
             </Alert>
           ) : location ? (
             <Text size="sm" c="dimmed">
-              📍 Latitude: {location.latitude.toFixed(6)}, Longitude: {location.longitude.toFixed(6)}
+              📍 Latitude: {location.latitude.toFixed(6)}, Longitude:{' '}
+              {location.longitude.toFixed(6)}
             </Text>
           ) : (
             <Group>
@@ -145,9 +158,9 @@ export function EmployeeCheckIn() {
               </Text>
             </Group>
           )}
-          <Button 
-            variant="light" 
-            size="xs" 
+          <Button
+            variant="light"
+            size="xs"
             onClick={() => {
               setLocation(null);
               setLocationError(null);
@@ -170,7 +183,15 @@ export function EmployeeCheckIn() {
       </Card>
 
       <Group justify="flex-end">
-        <Button component="a" href={user?.role === 'MANAGER' ? paths.manager.attendanceHistory : paths.employee.attendanceHistory} variant="outline">
+        <Button
+          component="a"
+          href={
+            user?.role === 'MANAGER'
+              ? paths.manager.attendanceHistory
+              : paths.employee.attendanceHistory
+          }
+          variant="outline"
+        >
           View My Attendance History
         </Button>
       </Group>
@@ -190,7 +211,7 @@ export function EmployeeCheckIn() {
               <Stack gap="xs">
                 <Text size="sm">
                   <strong>Check-in Time:</strong>{' '}
-                  {new Date(activeCheckIn.check_in_time).toLocaleString()}
+                  {formatDateTimeReadable(activeCheckIn.check_in_time)}
                 </Text>
                 <Text size="sm">
                   <strong>Location ID:</strong> {activeCheckIn.location_id}
@@ -217,16 +238,16 @@ export function EmployeeCheckIn() {
       {/* Leave Request Button */}
       <Card shadow="sm" padding="lg">
         <Stack gap="md">
-            <Group>
-                <IconFileDescription size={24} />
-                <Title order={3}>Leave Request</Title>
-            </Group>
-            <Text size="sm" c="dimmed">
-                Need to take time off? Submit a leave request here.
-            </Text>
-            <Button variant="outline" onClick={openCreateModal}>
-                Request Leave
-            </Button>
+          <Group>
+            <IconFileDescription size={24} />
+            <Title order={3}>Leave Request</Title>
+          </Group>
+          <Text size="sm" c="dimmed">
+            Need to take time off? Submit a leave request here.
+          </Text>
+          <Button variant="outline" onClick={openCreateModal}>
+            Request Leave
+          </Button>
         </Stack>
       </Card>
 

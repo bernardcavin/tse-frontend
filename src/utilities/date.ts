@@ -42,10 +42,20 @@ export function formatDateRange(start: Date, end: Date): string {
   const sameDate = start.toDateString() === end.toDateString();
 
   const formatDate = (d: Date) =>
-    d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'Asia/Jakarta',
+    });
 
   const formatTime = (d: Date) =>
-    d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    d.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Jakarta',
+    });
 
   const diffMs = Math.abs(end.getTime() - start.getTime());
   const diffMins = Math.floor(diffMs / 60000);
@@ -87,6 +97,7 @@ export const formatDateReadable = (date: Date | null | undefined): string => {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
+    timeZone: 'Asia/Jakarta',
   });
 };
 

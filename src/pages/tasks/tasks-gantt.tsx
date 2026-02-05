@@ -3,7 +3,7 @@ import { Paper, Select } from '@mantine/core';
 import { Gantt, Task, ViewMode } from 'gantt-task-react';
 import 'gantt-task-react/dist/index.css';
 import { useMemo, useState } from 'react';
-import { openTaskEdit } from './tasks-modals';
+import { openTaskView } from './tasks-modals';
 
 export function TasksGantt() {
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.Day);
@@ -55,7 +55,7 @@ export function TasksGantt() {
             <Gantt
                 tasks={tasks}
                 viewMode={viewMode}
-                onDoubleClick={(task) => openTaskEdit(task.id, () => {})}
+                onDoubleClick={(task) => openTaskView(task.id)}
                 listCellWidth="155px"
                 columnWidth={viewMode === ViewMode.Month ? 300 : 65}
             />
