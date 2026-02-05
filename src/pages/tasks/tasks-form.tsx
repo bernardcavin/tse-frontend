@@ -3,7 +3,7 @@ import { getUserOptions } from '@/api/resources/auth';
 
 import { DataMultiSelect } from '@/components/data-multi-select';
 import { FormSection } from '@/components/form-section';
-import { DatePickerInput, Select } from '@/components/forms';
+import { DatePickerInput, Select, TimeInput } from '@/components/forms';
 import { FileUploadButton } from '@/components/forms/file-upload';
 import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
@@ -23,8 +23,9 @@ const TaskValidation = z.object({
   description: z.string().optional(),
   status: z.nativeEnum(TaskStatus),
   priority: z.nativeEnum(TaskPriority),
-  start_date: z.coerce.date(),
-  end_date: z.coerce.date(),
+  date: z.coerce.date(),
+  time_start: z.string().optional(),
+  time_end: z.string().optional(),
   assignee_ids: z.array(z.string()).optional(),
   attachment_file_ids: z.array(z.string()).optional(),
 });
@@ -60,20 +61,26 @@ export function TaskForm() {
               data={Object.values(TaskPriority)}
             />
           </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 6 }}>
+          <Grid.Col span={12}>
             <DatePickerInput
             required
-              name="start_date"
-              label="Start Date"
+              name="date"
+              label="Date"
               placeholder="Select date"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <DatePickerInput
-            required
-              name="end_date"
-              label="End Date"
-              placeholder="Select date"
+            <TimeInput
+              name="time_start"
+              label="Start Time"
+              placeholder="Select time"
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6 }}>
+            <TimeInput
+              name="time_end"
+              label="End Time"
+              placeholder="Select time"
             />
           </Grid.Col>
           <Grid.Col span={12}>
