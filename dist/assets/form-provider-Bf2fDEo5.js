@@ -1,0 +1,1 @@
+import{r,ew as a,j as o,B as x}from"./index-Cy2G8xKC.js";const e=r.createContext({});function i(){const t=r.useContext(e);return a(t),t}function u({children:t,form:n,...s}){return o.jsx(e.Provider,{value:n,children:o.jsx(x,{component:"form",...s,children:t})})}export{u as F,i as u};

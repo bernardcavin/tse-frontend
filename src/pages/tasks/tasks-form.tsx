@@ -3,7 +3,7 @@ import { getUserOptions } from '@/api/resources/auth';
 
 import { DataMultiSelect } from '@/components/data-multi-select';
 import { FormSection } from '@/components/form-section';
-import { DatePickerInput, Select, TimeInput } from '@/components/forms';
+import { Select } from '@/components/forms';
 import { FileUploadButton } from '@/components/forms/file-upload';
 import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
@@ -12,6 +12,7 @@ import { TextInput } from '@/components/forms/text-input';
 import { useCreateTask, useGetTask, useUpdateTask } from '@/hooks/api/tasks';
 import { handleFormErrors } from '@/utilities/form';
 import { Button, Grid, Group, Loader, Stack } from '@mantine/core';
+import { DatePickerInput, TimeInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
 import { zodResolver } from 'mantine-form-zod-resolver';
@@ -23,12 +24,26 @@ const TaskValidation = z.object({
   description: z.string().optional(),
   status: z.nativeEnum(TaskStatus),
   priority: z.nativeEnum(TaskPriority),
-  date: z.coerce.date(),
+  start_date: z.date({ required_error: 'Start Date is required' }),
+  end_date: z.date({ required_error: 'End Date is required' }),
   time_start: z.string().optional(),
   time_end: z.string().optional(),
-  assignee_ids: z.array(z.string()).optional(),
+  assignee_ids: z.array(z.string()).min(1, 'Select at least one assignee'),
   attachment_file_ids: z.array(z.string()).optional(),
 });
+
+const initialValues = {
+  title: '',
+  description: '',
+  status: TaskStatus.PLANNED,
+  priority: TaskPriority.MEDIUM,
+  start_date: new Date(),
+  end_date: new Date(),
+  time_start: '',
+  time_end: '',
+  assignee_ids: [],
+  attachment_file_ids: [],
+};
 
 export function TaskForm() {
   return (
@@ -61,26 +76,34 @@ export function TaskForm() {
               data={Object.values(TaskPriority)}
             />
           </Grid.Col>
-          <Grid.Col span={12}>
+          <Grid.Col span={{ base: 12, sm: 6 }}>
             <DatePickerInput
-            required
-              name="date"
-              label="Date"
-              placeholder="Select date"
+              name="start_date"
+              label="Start Date"
+              placeholder="Select start date"
+              required
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6 }}>
+            <DatePickerInput
+              name="end_date"
+              label="End Date"
+              placeholder="Select end date"
+              required
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <TimeInput
               name="time_start"
               label="Start Time"
-              placeholder="Select time"
+              placeholder="Select start time"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <TimeInput
               name="time_end"
               label="End Time"
-              placeholder="Select time"
+              placeholder="Select end time"
             />
           </Grid.Col>
           <Grid.Col span={12}>
@@ -128,11 +151,7 @@ export function CreateTaskForm({ onSubmit }: TaskFormProps) {
   const form = useForm({
     mode: 'controlled',
     validate: zodResolver(TaskValidation),
-    initialValues: {
-      status: TaskStatus.PLANNED,
-      priority: TaskPriority.MEDIUM,
-      assignee_ids: [],
-    },
+    initialValues,
   });
 
   const fileIdManager = useFileIdManager();
