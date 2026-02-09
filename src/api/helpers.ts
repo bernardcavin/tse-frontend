@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   QueryClient,
   UndefinedInitialDataOptions,
@@ -9,6 +8,7 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
+import { useState } from 'react';
 import { z, ZodError } from 'zod';
 import { client } from './axios';
 import { BackendResponse } from './entities';
@@ -178,7 +178,7 @@ interface CreatePostMutationHookArgs<
   responseSchema: ResponseSchema;
   /** The mutation parameters for the react-query hook */
   rMutationParams?: EnhancedMutationParams<z.infer<ResponseSchema>, Error, z.infer<BodySchema>>;
-  options?: { isMultipart?: boolean };
+  options?: { contentType?: string, skipAuth?: boolean, transformBody?: (body: z.infer<BodySchema>) => any };
 }
 
 /**
@@ -227,15 +227,37 @@ export function createPostMutationHook<
     }) => {
       const url = createUrl(baseUrl, query, route);
 
-      const config = options?.isMultipart
-        ? { headers: { 'Content-Type': 'multipart/form-data' } }
-        : undefined;
+      // 1️⃣ Validate first
+      const parsedBody = bodySchema.parse(variables);
+
+      // 2️⃣ Transform if needed
+      const finalBody = options?.transformBody
+        ? options.transformBody(parsedBody)
+        : parsedBody;
+
+      // 3️⃣ Build headers
+      const headers: Record<string, string | undefined> = {};
+
+      if (options?.contentType) {
+        headers['Content-Type'] = options.contentType;
+      }
+
+      if (options?.skipAuth) {
+        headers['Authorization'] = undefined;
+      }
+
+      const config =
+        Object.keys(headers).length > 0
+          ? { headers }
+          : undefined;
 
       return client
-        .post(url, bodySchema.parse(variables), config)
+        .post(url, finalBody, config)
         .then((response) =>
           responseSchema
-            ? responseSchema.parse(BackendResponse.parse(response.data).data)
+            ? responseSchema.parse(
+                BackendResponse.parse(response.data).data
+              )
             : BackendResponse.parse(response.data).data
         )
         .catch(handleRequestError);

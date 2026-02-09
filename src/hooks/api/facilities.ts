@@ -1,4 +1,3 @@
-import { notifications } from '@mantine/notifications';
 import { Facility } from '@/api/entities/facility';
 import {
   createDeleteMutationHook,
@@ -8,6 +7,7 @@ import {
   createPutMutationHook,
   SortableQueryParams,
 } from '@/api/helpers';
+import { notifications } from '@mantine/notifications';
 
 export const useGetfacilities = createPaginationQueryHook<typeof Facility, SortableQueryParams>({
   endpoint: '/facilities',
@@ -36,9 +36,6 @@ export const useCreateFacility = createPostMutationHook({
     onError: (error) => {
       notifications.show({ message: error.message, color: 'red' });
     },
-  },
-  options: {
-    isMultipart: false,
   },
 });
 

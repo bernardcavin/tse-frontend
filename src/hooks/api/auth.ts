@@ -5,22 +5,31 @@ import { notifications } from '@mantine/notifications';
 import { z } from 'zod';
 
 export const useLogin = createPostMutationHook({
-  endpoint: 'auth/login', // Updated endpoint
-  bodySchema: LoginRequestSchema, // Body schema for request validation
-  responseSchema: LoginResponseSchema, // Response schema for response validation
+  endpoint: 'auth/login',
+  bodySchema: LoginRequestSchema,
+  responseSchema: LoginResponseSchema,
+  
+  options: {
+    contentType: 'application/x-www-form-urlencoded',
+    skipAuth: true, // IMPORTANT: do not attach Authorization
+    transformBody: (body) => {
+    const params = new URLSearchParams();
+    params.append('username', body.username);
+    params.append('password', body.password);
+    return params;
+  },
+  },
   rMutationParams: {
     onSuccess: (data) => {
-      
-      setClientAccessToken(data.access_token); // Set the access token
-      console.log('Successfuly logged in')
-      notifications.show({ title: 'Welcome back!', message: 'You have successfully logged in' });
+      setClientAccessToken(data.access_token);
+      notifications.show({
+        title: 'Welcome back!',
+        message: 'You have successfully logged in',
+      });
     },
     onError: (error) => {
       notifications.show({ message: error.message, color: 'red' });
     },
-  },
-  options: {
-    isMultipart: true,
   },
 });
 

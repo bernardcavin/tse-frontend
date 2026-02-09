@@ -1,10 +1,10 @@
 import { Contact } from '@/api/entities/contact';
 import {
-    createDeleteMutationHook,
-    createGetQueryHook,
-    createPaginationQueryHook,
-    createPostMutationHook,
-    createPutMutationHook,
+  createDeleteMutationHook,
+  createGetQueryHook,
+  createPaginationQueryHook,
+  createPostMutationHook,
+  createPutMutationHook,
 } from '@/api/helpers';
 import { getZoneOptions } from '@/api/resources/contacts';
 import { notifications } from '@mantine/notifications';
@@ -43,9 +43,7 @@ export const useCreateContact = createPostMutationHook({
       notifications.show({ message: error.message, color: 'red' });
     },
   },
-  options: {
-    isMultipart: false,
-  },
+  
 });
 
 export const useEditContact = createPutMutationHook({
@@ -108,7 +106,5 @@ export const useBulkImportContacts = createPostMutationHook({
       notifications.show({ message: error.message, color: 'red' });
     },
   },
-  options: {
-    isMultipart: false,
-  },
+  
 });

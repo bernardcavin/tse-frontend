@@ -1,4 +1,3 @@
-import { notifications } from '@mantine/notifications';
 import { Inventory } from '@/api/entities/inventory';
 import {
   createDeleteMutationHook,
@@ -8,6 +7,7 @@ import {
   createPutMutationHook,
   SortableQueryParams,
 } from '@/api/helpers';
+import { notifications } from '@mantine/notifications';
 
 export const useGetInventoryList = createPaginationQueryHook<typeof Inventory, SortableQueryParams>(
   {
@@ -38,9 +38,6 @@ export const useCreateInventory = createPostMutationHook({
     onError: (error) => {
       notifications.show({ message: error.message, color: 'red' });
     },
-  },
-  options: {
-    isMultipart: false,
   },
 });
 
