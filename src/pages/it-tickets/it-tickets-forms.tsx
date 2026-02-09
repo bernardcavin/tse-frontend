@@ -196,13 +196,16 @@ export function CreateITTicketForm({ onSubmit }: FormProps) {
   const { updateFilesMetadata } = fileIdManager;
 
   const handleSubmit = form.onSubmit((values: any) => {
-    createTicket(values, {
-      onError: (error) => handleFormErrors(form, error),
-      onSuccess: () => {
-        onSubmit();
-        updateFilesMetadata();
-      },
-    });
+    createTicket(
+      { variables: values },
+      {
+        onError: (error) => handleFormErrors(form, error),
+        onSuccess: () => {
+          onSubmit();
+          updateFilesMetadata();
+        },
+      }
+    );
   });
 
   return (

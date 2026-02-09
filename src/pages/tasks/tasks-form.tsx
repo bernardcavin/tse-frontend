@@ -3,14 +3,13 @@ import { getUserOptions } from '@/api/resources/auth';
 
 import { DataMultiSelect } from '@/components/data-multi-select';
 import { FormSection } from '@/components/form-section';
-import { DatePickerInput, Select, TimeInput } from '@/components/forms';
+import { DateTimePicker, Select } from '@/components/forms';
 import { FileUploadButton } from '@/components/forms/file-upload';
 import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
 import { Textarea } from '@/components/forms/text-area';
 import { TextInput } from '@/components/forms/text-input';
 import { useCreateTask, useGetTask, useUpdateTask } from '@/hooks/api/tasks';
-import { dateSchema } from '@/utilities/date';
 import { handleFormErrors } from '@/utilities/form';
 import { Button, Grid, Group, Loader, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
@@ -24,10 +23,8 @@ const TaskValidation = z.object({
   description: z.string().optional().nullable(),
   status: z.nativeEnum(TaskStatus),
   priority: z.nativeEnum(TaskPriority),
-  start_date: dateSchema,
-  end_date: dateSchema,
-  time_start: z.string().optional().nullable(),
-  time_end: z.string().optional().nullable(),
+  start_datetime: z.coerce.date(),
+  end_datetime: z.coerce.date(),
   assignee_ids: z.array(z.string()).min(1, 'Select at least one assignee'),
   attachment_file_ids: z.array(z.string()).optional(),
 });
@@ -37,10 +34,8 @@ const initialValues = {
   description: null,
   status: TaskStatus.PLANNED,
   priority: TaskPriority.MEDIUM,
-  start_date: new Date(),
-  end_date: new Date(),
-  time_start: null,
-  time_end: null,
+  start_datetime: new Date(),
+  end_datetime: new Date(),
   assignee_ids: [],
   attachment_file_ids: [],
 };
@@ -77,33 +72,19 @@ export function TaskForm() {
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <DatePickerInput
-              name="start_date"
-              label="Start Date"
-              placeholder="Select start date"
+            <DateTimePicker
+              name="start_datetime"
+              label="Start Datetime"
+              placeholder="Select start datetime"
               required
             />
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
-            <DatePickerInput
-              name="end_date"
-              label="End Date"
-              placeholder="Select end date"
+            <DateTimePicker
+              name="end_datetime"
+              label="End Datetime"
+              placeholder="Select end datetime"
               required
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 6 }}>
-            <TimeInput
-              name="time_start"
-              label="Start Time"
-              placeholder="Select start time"
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 6 }}>
-            <TimeInput
-              name="time_end"
-              label="End Time"
-              placeholder="Select end time"
             />
           </Grid.Col>
           <Grid.Col span={12}>

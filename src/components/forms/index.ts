@@ -8,3 +8,4 @@ export * from './switch';
 export * from './text-input';
 export * from './time-input';
 
+export * from './date-time-picker-input';

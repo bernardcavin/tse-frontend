@@ -1,20 +1,20 @@
+import { useCallback, useMemo } from 'react';
+import { DataTableColumn } from 'mantine-datatable';
+import { Badge } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import { Task } from '@/api/entities/tasks';
 import { usePagination } from '@/api/helpers';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
 import { useAuth } from '@/hooks';
 import { useDeleteTask, useGetTasks } from '@/hooks/api/tasks';
-import { formatDateReadable } from '@/utilities/date';
-import { Badge } from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { DataTableColumn } from 'mantine-datatable';
-import { useCallback, useMemo } from 'react';
+import { formatDateTimeReadable } from '@/utilities/date';
 import { openTaskCreate, openTaskEdit, openTaskView } from './tasks-modals';
 
 export function TasksTable() {
   const { user } = useAuth();
   const isManager = user?.role === 'MANAGER';
-  
+
   const { page, limit, setLimit, setPage } = usePagination();
   const { filters, sort } = DataTable.useDataTable({
     sortConfig: { direction: 'desc', column: 'created_at' },
@@ -34,68 +34,77 @@ export function TasksTable() {
         labels: { confirm: 'Delete', cancel: 'Cancel' },
         confirmProps: { color: 'red' },
         onConfirm: () => {
-          deleteTask(
-            { route: { id } },
-            { onSuccess: () => refetch() }
-          );
+          deleteTask({ route: { id } }, { onSuccess: () => refetch() });
         },
       });
     },
     [deleteTask, refetch]
   );
 
-  
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'PLANNED': return 'blue';
-      case 'IN_PROGRESS': return 'yellow';
-      case 'COMPLETED': return 'green';
-      case 'CANCELLED': return 'gray';
-      case 'ON_HOLD': return 'orange';
-      default: return 'gray';
+      case 'PLANNED':
+        return 'blue';
+      case 'IN_PROGRESS':
+        return 'yellow';
+      case 'COMPLETED':
+        return 'green';
+      case 'CANCELLED':
+        return 'gray';
+      case 'ON_HOLD':
+        return 'orange';
+      default:
+        return 'gray';
     }
   };
 
   const getPriorityColor = (priority: string) => {
-     switch (priority) {
-      case 'CRITICAL': return 'red';
-      case 'HIGH': return 'orange';
-      case 'MEDIUM': return 'blue';
-      case 'LOW': return 'gray';
-      default: return 'gray';
+    switch (priority) {
+      case 'CRITICAL':
+        return 'red';
+      case 'HIGH':
+        return 'orange';
+      case 'MEDIUM':
+        return 'blue';
+      case 'LOW':
+        return 'gray';
+      default:
+        return 'gray';
     }
   };
 
   const columns: DataTableColumn<Task>[] = useMemo(
     () => [
       { accessor: 'title', title: 'Task', sortable: true },
-      { 
-        accessor: 'status', 
-        title: 'Status', 
+      {
+        accessor: 'status',
+        title: 'Status',
         sortable: true,
-        render: ({ status }) => (
-            <Badge color={getStatusColor(status)}>{status}</Badge>
-        )
+        render: ({ status }) => <Badge color={getStatusColor(status)}>{status}</Badge>,
       },
-      { 
-        accessor: 'priority', 
-        title: 'Priority', 
+      {
+        accessor: 'priority',
+        title: 'Priority',
         sortable: true,
         render: ({ priority }) => (
-            <Badge variant="outline" color={getPriorityColor(priority)}>{priority}</Badge>
-        )
+          <Badge variant="outline" color={getPriorityColor(priority)}>
+            {priority}
+          </Badge>
+        ),
       },
-      { 
-        accessor: 'start_date', 
-        title: 'Start Date', 
+      {
+        accessor: 'start_datetime',
+        title: 'Start',
         sortable: true,
-        render: ({ start_date }) => start_date ? formatDateReadable(new Date(start_date)) : '-'
+        render: ({ start_datetime }) =>
+          start_datetime ? formatDateTimeReadable(new Date(start_datetime)) : '-',
       },
-      { 
-        accessor: 'end_date', 
-        title: 'End Date', 
+      {
+        accessor: 'end_datetime',
+        title: 'End',
         sortable: true,
-        render: ({ end_date }) => end_date ? formatDateReadable(new Date(end_date)) : '-'
+        render: ({ end_datetime }) =>
+          end_datetime ? formatDateTimeReadable(new Date(end_datetime)) : '-',
       },
       {
         accessor: 'actions',
@@ -115,16 +124,16 @@ export function TasksTable() {
 
   return (
     <DataTable.Container>
-        <DataTable.Title
-            title="Tasks"
-            actions={
-                <AddButton onClick={() => openTaskCreate(refetch)}variant='default'>
-                    Add Task
-                </AddButton>
-            }
-        />
-        <DataTable.Content>
-            <DataTable.Table
+      <DataTable.Title
+        title="Tasks"
+        actions={
+          <AddButton onClick={() => openTaskCreate(refetch)} variant="default">
+            Add Task
+          </AddButton>
+        }
+      />
+      <DataTable.Content>
+        <DataTable.Table
           striped
           minHeight={240}
           noRecordsText={DataTable.noRecordsText('safety observations')}
@@ -143,8 +152,8 @@ export function TasksTable() {
           columns={columns}
           pinLastColumn
           highlightOnHover
-            />
-        </DataTable.Content>
+        />
+      </DataTable.Content>
     </DataTable.Container>
   );
 }

@@ -1,3 +1,4 @@
+import { getUserOptions } from '@/api/resources/auth';
 import { FileDownloadButton } from '@/components/file-download';
 import { FormSection } from '@/components/form-section';
 import { useGetTask } from '@/hooks/api/tasks';
@@ -12,6 +13,7 @@ import {
     Table,
     Text,
 } from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
 
 interface ViewTaskFormProps {
   id: string;
@@ -19,6 +21,10 @@ interface ViewTaskFormProps {
 
 export function ViewTaskForm({ id }: ViewTaskFormProps) {
   const { data: task, isLoading } = useGetTask({ route: { id } });
+  const { data: userOptions } = useQuery({
+    queryKey: ['user-options'],
+    queryFn: getUserOptions,
+  });
 
   if (isLoading) {
     return (
@@ -53,20 +59,12 @@ export function ViewTaskForm({ id }: ViewTaskFormProps) {
           </Grid.Col>
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Field 
-                label="Start Date" 
-                value={task.start_date ? formatDateReadable(new Date(task.start_date)) : '-'} 
+                label="Start Datetime" 
+                value={task.start_datetime ? formatDateReadable(new Date(task.start_datetime)) : '-'} 
             />
             <Field 
-                label="End Date" 
-                value={task.end_date ? formatDateReadable(new Date(task.end_date)) : '-'} 
-            />
-             <Field 
-                label="Start Time" 
-                value={task.time_start} 
-            />
-             <Field 
-                label="End Time" 
-                value={task.time_end} 
+                label="End Datetime" 
+                value={task.end_datetime ? formatDateReadable(new Date(task.end_datetime)) : '-'} 
             />
           </Grid.Col>
            <Grid.Col span={12}>
@@ -82,17 +80,10 @@ export function ViewTaskForm({ id }: ViewTaskFormProps) {
                     label="Assignees" 
                     value={
                         task.assignee_ids?.length 
-                        ? task.assignee_ids.length + ' Assignee(s)' // Ideally fetching user names would be better, but IDs are what we have on the object directly for now. 
-                        // If the backend returned populated objects that would be better. For now let's stick to what we have.
+                        ? task.assignee_ids.map(id => userOptions?.find((opt: { value: string; label: string }) => opt.value === id)?.label || 'Unknown').join(', ')
                         : 'No assignees'
                     } 
                  />
-                 {/*  
-                    TODO: Fetch and display actual user names if available or if we fetch them. 
-                    Currently the hook might just return IDs depending on backend implementation.
-                    Checking task object structure... 
-                    If task object has `assignees` relationship loaded it would be better.
-                  */}
              </Grid.Col>
         </Grid>
       </FormSection>

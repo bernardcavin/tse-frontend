@@ -30,14 +30,14 @@ export function TasksCalendar() {
     if (!data?.data) return [];
 
     return data.data
-      .filter((task) => task.start_date && task.end_date)
+      .filter((task) => task.start_datetime && task.end_datetime)
       .map((task) => ({
         id: task.id,
         title: task.title,
-        start: new Date(task.start_date!),
-        end: new Date(task.end_date!),
-        resource: task,
         status: task.status,
+        start: new Date(task.start_datetime!),
+        end: new Date(task.end_datetime!),
+        resource: task,
       }));
   }, [data]);
 

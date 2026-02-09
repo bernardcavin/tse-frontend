@@ -17,8 +17,8 @@ export function TasksGantt() {
     return data.data.map((task) => {
         // Gantt needs valid start and end
         // If missing, default to now + 1 day for visualization or skip
-        const start = task.start_date ? new Date(task.start_date) : new Date();
-        const end = task.end_date ? new Date(task.end_date) : new Date(start.getTime() + 86400000);
+        const start = task.start_datetime ? new Date(task.start_datetime) : new Date();
+        const end = task.end_datetime ? new Date(task.end_datetime) : new Date(start.getTime() + 86400000);
         
         return {
             start,
