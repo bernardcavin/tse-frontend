@@ -1,7 +1,18 @@
-import { useEffect } from 'react';
-import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { zodResolver } from 'mantine-form-zod-resolver';
+import {
+  ChecklistItemType,
+  HousekeepingCreate,
+  HousekeepingCreateType,
+} from '@/api/entities/housekeeping';
+import { getFacilityOptions } from '@/api/resources/facilities';
+import { FormSection } from '@/components/form-section';
+import { FormProvider } from '@/components/forms/form-provider';
+import {
+  useCreateHousekeeping,
+  useEditHousekeeping,
+  useGetHousekeeping,
+} from '@/hooks/api/housekeeping';
+import { normalizeDate } from '@/utilities/date';
+import { handleFormErrors } from '@/utilities/form';
 import {
   Button,
   Divider,
@@ -18,21 +29,10 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import {
-  ChecklistItemType,
-  HousekeepingCreate,
-  HousekeepingCreateType,
-} from '@/api/entities/housekeeping';
-import { getFacilityOptions } from '@/api/resources/facilities';
-import { FormSection } from '@/components/form-section';
-import { FormProvider } from '@/components/forms/form-provider';
-import {
-  useCreateHousekeeping,
-  useEditHousekeeping,
-  useGetHousekeeping,
-} from '@/hooks/api/housekeeping';
-import { normalizeDate } from '@/utilities/date';
-import { handleFormErrors } from '@/utilities/form';
+import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import { zodResolver } from 'mantine-form-zod-resolver';
+import { useEffect } from 'react';
 
 const SECTION_A_ITEMS = [
   'Lantai bersih dari debu, minyak, dan kotoran',
@@ -278,7 +278,7 @@ export function CreateHousekeepingForm({ onSubmit }: FormProps) {
   });
 
   const handleSubmit = form.onSubmit((values: any) => {
-    createHousekeeping(values, {
+    createHousekeeping({ variables: values }, {
       onError: (error) => handleFormErrors(form, error),
       onSuccess: () => {
         onSubmit();

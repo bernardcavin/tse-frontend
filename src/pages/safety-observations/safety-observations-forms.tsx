@@ -1,21 +1,3 @@
-import { useEffect, useState } from 'react';
-import { IconBan, IconCheck, IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { zodResolver } from 'mantine-form-zod-resolver';
-import {
-  Button,
-  Checkbox,
-  Grid,
-  Group,
-  Loader,
-  Select,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
-} from '@mantine/core';
-import { DatePickerInput, TimePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
 import {
   SafetyObservationClose,
   SafetyObservationCreate,
@@ -36,6 +18,24 @@ import {
 } from '@/hooks/api/safety-observations';
 import { normalizeDate } from '@/utilities/date';
 import { handleFormErrors } from '@/utilities/form';
+import {
+  Button,
+  Checkbox,
+  Grid,
+  Group,
+  Loader,
+  Select,
+  Stack,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core';
+import { DatePickerInput, TimePicker } from '@mantine/dates';
+import { useForm } from '@mantine/form';
+import { IconBan, IconCheck, IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import { zodResolver } from 'mantine-form-zod-resolver';
+import { useEffect, useState } from 'react';
 
 const OBSERVATION_TYPES = [
   { value: 'safe_act', label: 'Tindakan Aman (Safe Act)' },
@@ -290,7 +290,7 @@ export function CreateSafetyObservationForm({ onSubmit }: FormProps) {
   const { updateFilesMetadata } = fileIdManager;
 
   const handleSubmit = form.onSubmit((values: any) => {
-    createObservation(values, {
+    createObservation({variables: values}, {
       onError: (error) => handleFormErrors(form, error),
       onSuccess: () => {
         onSubmit();

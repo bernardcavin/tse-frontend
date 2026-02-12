@@ -22,8 +22,8 @@ export const Task = z.object({
   status: z.nativeEnum(TaskStatus),
   priority: z.nativeEnum(TaskPriority),
 
-  start_datetime: z.coerce.date(),
-  end_datetime: z.coerce.date(),
+  start_datetime: z.string(),
+  end_datetime: z.string(),
 
   created_by_id: z.string(),
   created_by: z.any().optional(), // User type
@@ -43,8 +43,8 @@ export const CreateTaskPayload = z.object({
   status: z.nativeEnum(TaskStatus).optional(),
   priority: z.nativeEnum(TaskPriority).optional(),
 
-  start_datetime: z.coerce.date(),
-  end_datetime: z.coerce.date(),
+  start_datetime: z.string(),
+  end_datetime: z.string(),
   assignee_ids: z.array(z.string()).optional(),
   attachment_file_ids: z.array(z.string()).optional(),
 });

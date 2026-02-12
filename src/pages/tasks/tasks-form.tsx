@@ -23,8 +23,8 @@ const TaskValidation = z.object({
   description: z.string().optional().nullable(),
   status: z.nativeEnum(TaskStatus),
   priority: z.nativeEnum(TaskPriority),
-  start_datetime: z.coerce.date(),
-  end_datetime: z.coerce.date(),
+  start_datetime: z.string(),
+  end_datetime: z.string(),
   assignee_ids: z.array(z.string()).min(1, 'Select at least one assignee'),
   attachment_file_ids: z.array(z.string()).optional(),
 });
@@ -185,12 +185,10 @@ export function EditTaskForm({ onSubmit, id }: EditTaskFormProps) {
     initialValues: {
      assignee_ids: [] as string[],
     },
-
   });
 
   useEffect(() => {
     if (task) {
-      console.log(task)
       form.setValues(task);
     }
   }, [task]);

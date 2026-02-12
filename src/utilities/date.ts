@@ -24,6 +24,22 @@ export function formatRelativeDate(value: Date | CustomDate | string) {
   return date(value).fromNow();
 }
 
+
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+export const wibDateSchema = z.coerce.string().transform((value) => {
+  // Assume input like "2026-02-05T12:00:00"
+  const assumedWib = new Date(value);
+
+  if (isNaN(assumedWib.getTime())) {
+    throw new Error("Invalid date");
+  }
+
+  // Subtract 7 hours to convert WIB → UTC
+  const utcTime = assumedWib.getTime() - WIB_OFFSET_MS;
+
+  return new Date(utcTime);
+});
 export const dateSchema = z
   .union([z.string(), z.date()])
   .refine((value) => dayjs(value).isValid(), { message: 'Invalid date' })
