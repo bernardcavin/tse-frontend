@@ -6,14 +6,14 @@ import { FormProvider } from '@/components/forms/form-provider';
 import { useCreateEmployee, useGetEmployee, useUpdateEmployee } from '@/hooks/api/employees';
 import { emptyStringToNull } from '@/utilities/object';
 import {
-    Button,
-    Grid,
-    Group,
-    PasswordInput,
-    Select,
-    Stack,
-    Textarea,
-    TextInput,
+  Button,
+  Grid,
+  Group,
+  PasswordInput,
+  Select,
+  Stack,
+  Textarea,
+  TextInput,
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
@@ -91,7 +91,7 @@ export function EmployeeForm({ employeeId, onSuccess }: EmployeeFormProps) {
         }
       );
     } else {
-      createEmployee(values, {
+      createEmployee({variables: values}, {
         onSuccess: () => {
           updateFilesMetadata();
           modals.close('employee-create');
