@@ -1,7 +1,7 @@
 export const app = {
   name: 'SIGAP Ops',
-  apiBaseUrl: 'https://api.tsehub.com',
-  // apiBaseUrl: 'https://api.dev-apetrol.site',
+  // apiBaseUrl: 'https://api.tsehub.com',
+  apiBaseUrl: 'https://api.dev-apetrol.site',
   // apiBaseUrl: 'http://10.153.14.135:8000',
   // apiBaseUrl: 'http://localhost:8000',
   fakeBackend: false,
