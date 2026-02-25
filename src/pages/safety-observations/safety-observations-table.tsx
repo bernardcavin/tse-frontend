@@ -1,9 +1,3 @@
-import { useCallback, useMemo, useState } from 'react';
-import { IconDownload } from '@tabler/icons-react';
-import { DataTableColumn } from 'mantine-datatable';
-import { Badge, Button, Group } from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { notifications } from '@mantine/notifications';
 import { client } from '@/api/axios';
 import { BackendResponse } from '@/api/entities';
 import { ObservationStatusType, SafetyObservationType } from '@/api/entities/safety-observations';
@@ -16,6 +10,12 @@ import {
   useGetSafetyObservationList,
 } from '@/hooks/api/safety-observations';
 import { icons } from '@/utilities/icons';
+import { Badge, Button, Group } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
+import { IconDownload } from '@tabler/icons-react';
+import { DataTableColumn } from 'mantine-datatable';
+import { useCallback, useMemo, useState } from 'react';
 import {
   openSafetyObservationClose,
   openSafetyObservationCreate,
@@ -188,6 +188,11 @@ export function SafetyObservationsTable() {
           const date = new Date(observation_date);
           return `${date.toLocaleDateString()} ${observation_time || ''}`;
         },
+      },
+      {
+        accessor: 'observer_name',
+        title: 'Observer',
+        sortable: true,
       },
       {
         accessor: 'location_area',
