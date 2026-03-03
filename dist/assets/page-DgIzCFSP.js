@@ -1,1 +1,0 @@
-import{r,eL as s,j as e,eM as p,b as c,B as i}from"./index-C2zqrLKo.js";const d=r.forwardRef(({children:t,title:a="",p:o="md",meta:n,withFooter:j=!0,...x},m)=>(r.useEffect(()=>(s.complete(),()=>s.start()),[]),e.jsxs(e.Fragment,{children:[e.jsxs(p,{children:[e.jsx("title",{children:`${a} | ${c.name}`}),n]}),e.jsx(i,{ref:m,...x,p:o,children:t})]})));export{d as P};
