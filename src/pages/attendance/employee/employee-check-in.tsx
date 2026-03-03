@@ -40,6 +40,7 @@ export function EmployeeCheckIn() {
   const [scannedData, setScannedData] = useState<any>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [processingFace, setProcessingFace] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     data: statusData,
@@ -51,6 +52,7 @@ export function EmployeeCheckIn() {
 
   const activeCheckIn = statusData?.active_check_in;
   const isCheckedIn = statusData?.is_checked_in;
+  const isBusy = checkingIn || checkingOut || processingFace;
 
   // Get user location on mount
   useEffect(() => {
@@ -71,7 +73,7 @@ export function EmployeeCheckIn() {
     }
   }, []);
 
-  // QR scanning loop using jsQR — reads frames from the single Webcam component
+  // QR scanning loop using jsQR — reads frames from the Webcam (back camera)
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (viewMode === 'QR_SCAN') {
@@ -124,6 +126,7 @@ export function EmployeeCheckIn() {
     if (!scannedData || !location || !capturedImage) return;
 
     setProcessingFace(true);
+    setErrorMessage(null);
     try {
       const embedding = await getFaceEmbedding(capturedImage);
       checkIn(
@@ -141,21 +144,22 @@ export function EmployeeCheckIn() {
             setScannedData(null);
             setCapturedImage(null);
             setViewMode('IDLE');
+            setProcessingFace(false);
             refetchStatus();
+            notifications.show({ title: 'Success', message: 'Checked in successfully!', color: 'green' });
           },
           onError: (error: any) => {
-            notifications.show({
-              title: 'Check-In Failed',
-              message: error?.response?.data?.detail || 'Face verification failed. Please try again.',
-              color: 'red',
-            });
+            setProcessingFace(false);
+            const msg = error?.response?.data?.detail || 'Face verification failed. Please try again.';
+            setErrorMessage(msg);
+            notifications.show({ title: 'Check-In Failed', message: msg, color: 'red' });
           },
         }
       );
     } catch (e) {
-      notifications.show({ title: 'Error', message: 'Failed to process face image.', color: 'red' });
-    } finally {
       setProcessingFace(false);
+      setErrorMessage('Failed to process face image. Please retake the photo.');
+      notifications.show({ title: 'Error', message: 'Failed to process face image.', color: 'red' });
     }
   };
 
@@ -163,6 +167,7 @@ export function EmployeeCheckIn() {
     if (!activeCheckIn || !location || !capturedImage) return;
 
     setProcessingFace(true);
+    setErrorMessage(null);
     try {
       const embedding = await getFaceEmbedding(capturedImage);
       checkOut(
@@ -178,21 +183,22 @@ export function EmployeeCheckIn() {
           onSuccess: () => {
             setCapturedImage(null);
             setViewMode('IDLE');
+            setProcessingFace(false);
             refetchStatus();
+            notifications.show({ title: 'Success', message: 'Checked out successfully!', color: 'green' });
           },
           onError: (error: any) => {
-            notifications.show({
-              title: 'Check-Out Failed',
-              message: error?.response?.data?.detail || 'Face verification failed. Please try again.',
-              color: 'red',
-            });
+            setProcessingFace(false);
+            const msg = error?.response?.data?.detail || 'Face verification failed. Please try again.';
+            setErrorMessage(msg);
+            notifications.show({ title: 'Check-Out Failed', message: msg, color: 'red' });
           },
         }
       );
     } catch (e) {
-      notifications.show({ title: 'Error', message: 'Failed to process face image.', color: 'red' });
-    } finally {
       setProcessingFace(false);
+      setErrorMessage('Failed to process face image. Please retake the photo.');
+      notifications.show({ title: 'Error', message: 'Failed to process face image.', color: 'red' });
     }
   };
 
@@ -200,6 +206,7 @@ export function EmployeeCheckIn() {
     setViewMode('IDLE');
     setScannedData(null);
     setCapturedImage(null);
+    setErrorMessage(null);
   };
 
   if (statusLoading) {
@@ -290,7 +297,7 @@ export function EmployeeCheckIn() {
                   <Button
                     fullWidth
                     color="orange"
-                    onClick={() => { setCapturedImage(null); setViewMode('FACE_CAPTURE'); }}
+                    onClick={() => { setCapturedImage(null); setErrorMessage(null); setViewMode('FACE_CAPTURE'); }}
                     disabled={!location}
                   >
                     Check Out (Face Verification)
@@ -303,7 +310,7 @@ export function EmployeeCheckIn() {
                   </Badge>
                   <Button
                     fullWidth
-                    onClick={() => { setScannedData(null); setCapturedImage(null); setViewMode('QR_SCAN'); }}
+                    onClick={() => { setScannedData(null); setCapturedImage(null); setErrorMessage(null); setViewMode('QR_SCAN'); }}
                     disabled={!location}
                   >
                     Check In (QR + Face Verification)
@@ -313,24 +320,68 @@ export function EmployeeCheckIn() {
             </>
           )}
 
-          {/* QR Scan + Face Capture — uses a SINGLE Webcam component */}
-          {(viewMode === 'QR_SCAN' || viewMode === 'FACE_CAPTURE') && (
+          {/* QR Scan — uses BACK camera (environment) */}
+          {viewMode === 'QR_SCAN' && (
             <Stack gap="md" align="center">
-              {viewMode === 'QR_SCAN' && (
-                <Alert title="Step 1: Scan Location QR Code" color="blue" w="100%">
-                  Hold the attendance location QR code up to the camera.
+              <Alert title="Step 1: Scan Location QR Code" color="blue" w="100%">
+                Point the back camera at the attendance location QR code.
+              </Alert>
+
+              <div style={{ position: 'relative' }}>
+                <Webcam
+                  key="qr-cam"
+                  audio={false}
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={{ facingMode: { ideal: 'environment' } }}
+                  style={{ width: '100%', maxWidth: 400, borderRadius: 8 }}
+                />
+                <div style={{
+                  position: 'absolute', top: '50%', left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 200, height: 200,
+                  border: '2px dashed rgba(255,255,255,0.7)',
+                  borderRadius: 10,
+                }} />
+              </div>
+
+              <Button variant="default" onClick={resetFlow}>Cancel</Button>
+            </Stack>
+          )}
+
+          {/* Face Capture — uses FRONT camera (user) */}
+          {viewMode === 'FACE_CAPTURE' && (
+            <Stack gap="md" align="center">
+              <Alert
+                title={!isCheckedIn ? 'Step 2: Face Verification' : 'Check Out: Face Verification'}
+                color="blue"
+                w="100%"
+              >
+                {capturedImage
+                  ? 'Review your face capture and submit.'
+                  : 'Position your face clearly in the frame and capture.'}
+              </Alert>
+
+              {/* Error message */}
+              {errorMessage && (
+                <Alert icon={<IconAlertCircle size={16} />} color="red" w="100%">
+                  {errorMessage}
                 </Alert>
               )}
 
-              {viewMode === 'FACE_CAPTURE' && (
-                <Alert
-                  title={!isCheckedIn ? 'Step 2: Face Verification' : 'Check Out: Face Verification'}
-                  color="blue"
-                  w="100%"
-                >
-                  {capturedImage
-                    ? 'Review your face capture and submit.'
-                    : 'Position your face clearly in the frame and capture.'}
+              {/* Processing indicator */}
+              {isBusy && (
+                <Alert color="blue" w="100%">
+                  <Group>
+                    <Loader size="sm" />
+                    <Text size="sm">
+                      {processingFace && !checkingIn && !checkingOut
+                        ? 'Processing face embedding...'
+                        : checkingIn
+                          ? 'Submitting check-in...'
+                          : 'Submitting check-out...'}
+                    </Text>
+                  </Group>
                 </Alert>
               )}
 
@@ -343,50 +394,40 @@ export function EmployeeCheckIn() {
               ) : (
                 <div style={{ position: 'relative' }}>
                   <Webcam
+                    key="face-cam"
                     audio={false}
                     ref={webcamRef}
                     screenshotFormat="image/jpeg"
                     videoConstraints={{ facingMode: 'user' }}
                     style={{ width: '100%', maxWidth: 400, borderRadius: 8 }}
                   />
-                  {viewMode === 'QR_SCAN' && (
-                    <div style={{
-                      position: 'absolute', top: '50%', left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: 200, height: 200,
-                      border: '2px dashed rgba(255,255,255,0.7)',
-                      borderRadius: 10,
-                    }} />
-                  )}
-                  {viewMode === 'FACE_CAPTURE' && (
-                    <div style={{
-                      position: 'absolute', top: '50%', left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      width: 180, height: 240,
-                      border: '2px dashed rgba(255,255,255,0.8)',
-                      borderRadius: '50%',
-                      pointerEvents: 'none',
-                    }} />
-                  )}
+                  <div style={{
+                    position: 'absolute', top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 180, height: 240,
+                    border: '2px dashed rgba(255,255,255,0.8)',
+                    borderRadius: '50%',
+                    pointerEvents: 'none',
+                  }} />
                 </div>
               )}
 
               <Group justify="center">
-                <Button variant="default" onClick={resetFlow} disabled={checkingIn || checkingOut || processingFace}>
+                <Button variant="default" onClick={resetFlow} disabled={isBusy}>
                   Cancel
                 </Button>
-                {viewMode === 'FACE_CAPTURE' && !capturedImage && (
+                {!capturedImage && (
                   <Button onClick={handleCaptureFace}>Capture Face</Button>
                 )}
-                {viewMode === 'FACE_CAPTURE' && capturedImage && (
+                {capturedImage && (
                   <>
-                    <Button variant="default" onClick={() => setCapturedImage(null)} disabled={checkingIn || checkingOut || processingFace}>
+                    <Button variant="default" onClick={() => { setCapturedImage(null); setErrorMessage(null); }} disabled={isBusy}>
                       Retake
                     </Button>
                     {!isCheckedIn ? (
                       <Button
                         onClick={handleCheckIn}
-                        loading={checkingIn || processingFace}
+                        loading={isBusy}
                         color="green"
                       >
                         Submit Check-In
@@ -394,7 +435,7 @@ export function EmployeeCheckIn() {
                     ) : (
                       <Button
                         onClick={handleCheckOut}
-                        loading={checkingOut || processingFace}
+                        loading={isBusy}
                         color="orange"
                       >
                         Submit Check-Out

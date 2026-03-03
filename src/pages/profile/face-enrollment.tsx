@@ -1,7 +1,8 @@
 import { useAuth } from '@/hooks';
 import { useEnrollFace } from '@/hooks/api/employees';
 import { getFaceEmbedding } from '@/utils/faceEmbedding';
-import { Button, Group, Stack, Text, ThemeIcon } from '@mantine/core';
+import { Alert, Button, Group, Loader, Stack, Text, ThemeIcon } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useCallback, useRef, useState } from 'react';
 import { PiCameraDuotone, PiCheckCircleDuotone, PiWarningCircleDuotone } from 'react-icons/pi';
 import Webcam from 'react-webcam';
@@ -11,37 +12,52 @@ export function FaceEnrollmentOption() {
   const webcamRef = useRef<Webcam>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [processingEmbedding, setProcessingEmbedding] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { mutate: enrollFace, isPending: isEnrolling } = useEnrollFace();
+
+  const isBusy = isEnrolling || processingEmbedding;
 
   const handleCapture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
-      // Remove the prefix (data:image/jpeg;base64,) if necessary, but backend decode_base64_image handles it.
       setCapturedImage(imageSrc);
+      setErrorMessage(null);
     }
   }, [webcamRef]);
 
   const handleRetake = () => {
     setCapturedImage(null);
+    setErrorMessage(null);
   };
 
   const handleEnroll = async () => {
     if (!capturedImage) return;
+    setProcessingEmbedding(true);
+    setErrorMessage(null);
     try {
       const embedding = await getFaceEmbedding(capturedImage);
       enrollFace(embedding, {
         onSuccess: () => {
           setIsCapturing(false);
           setCapturedImage(null);
+          setProcessingEmbedding(false);
+          notifications.show({ title: 'Success', message: 'Face enrolled successfully!', color: 'green' });
+        },
+        onError: (error: any) => {
+          setProcessingEmbedding(false);
+          const msg = error?.response?.data?.detail || 'Failed to enroll face. Please try again.';
+          setErrorMessage(msg);
+          notifications.show({ title: 'Enrollment Failed', message: msg, color: 'red' });
         },
       });
     } catch (e: any) {
-      console.error('Face embedding failed:', e);
+      setProcessingEmbedding(false);
+      setErrorMessage('Failed to process face image. Please retake the photo.');
+      notifications.show({ title: 'Error', message: 'Failed to process face image.', color: 'red' });
     }
   };
-
-
 
   if (!user) return null;
 
@@ -49,6 +65,27 @@ export function FaceEnrollmentOption() {
     return (
       <Stack align="center" gap="md">
         <Text fw={500}>Position your face clearly in the frame</Text>
+
+        {/* Error message */}
+        {errorMessage && (
+          <Alert color="red" w="100%">
+            {errorMessage}
+          </Alert>
+        )}
+
+        {/* Processing indicator */}
+        {isBusy && (
+          <Alert color="blue" w="100%">
+            <Group>
+              <Loader size="sm" />
+              <Text size="sm">
+                {processingEmbedding && !isEnrolling
+                  ? 'Processing face embedding...'
+                  : 'Saving face data...'}
+              </Text>
+            </Group>
+          </Alert>
+        )}
         
         {capturedImage ? (
           <img src={capturedImage} alt="Captured face" style={{ width: '100%', maxWidth: '400px', borderRadius: '8px' }} />
@@ -75,10 +112,10 @@ export function FaceEnrollmentOption() {
         <Group mt="md">
           {capturedImage ? (
             <>
-              <Button variant="default" onClick={handleRetake} disabled={isEnrolling}>
-                Retake Phase
+              <Button variant="default" onClick={handleRetake} disabled={isBusy}>
+                Retake Photo
               </Button>
-              <Button onClick={handleEnroll} loading={isEnrolling} leftSection={<PiCheckCircleDuotone />}>
+              <Button onClick={handleEnroll} loading={isBusy} leftSection={<PiCheckCircleDuotone />}>
                 Save Face
               </Button>
             </>
