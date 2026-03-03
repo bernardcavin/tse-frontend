@@ -1,5 +1,3 @@
-import z from 'zod';
-import { notifications } from '@mantine/notifications';
 import {
   SafetyObservation,
   SafetyObservationClose,
@@ -14,6 +12,8 @@ import {
   createPostMutationHook,
   createPutMutationHook,
 } from '@/api/helpers';
+import { notifications } from '@mantine/notifications';
+import z from 'zod';
 
 // ============================================================================
 // QUERIES
@@ -22,6 +22,11 @@ import {
 type FilterableQueryParams = {
   sort?: `${string}:${'asc' | 'desc'}`;
   filter?: string;
+  status?: string;
+  start_date?: string;
+  end_date?: string;
+  date?: string;
+  observer_name?: string;
 };
 
 export const useGetSafetyObservationList = createPaginationQueryHook<

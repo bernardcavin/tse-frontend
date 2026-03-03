@@ -10,12 +10,14 @@ import {
   useGetSafetyObservationList,
 } from '@/hooks/api/safety-observations';
 import { icons } from '@/utilities/icons';
-import { Badge, Button, Group } from '@mantine/core';
+import { Badge, Button, Group, Select, TextInput } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { useDebouncedCallback } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { IconDownload } from '@tabler/icons-react';
 import { DataTableColumn } from 'mantine-datatable';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   openSafetyObservationClose,
   openSafetyObservationCreate,
@@ -107,6 +109,76 @@ function downloadCSV(data: Array<Record<string, string>>, filename: string) {
   URL.revokeObjectURL(url);
 }
 
+// Stable Filter Components to prevent focus loss during Parent re-renders
+const SafeTextInputFilter = ({
+  name,
+  label,
+  filters,
+  setPage,
+}: {
+  name: string;
+  label: string;
+  filters: any;
+  setPage: (p: number) => void;
+}) => {
+  const [localValue, setLocalValue] = useState((filters.filters[name]?.value as string) ?? '');
+
+  useEffect(() => {
+    const externalValue = (filters.filters[name]?.value as string) ?? '';
+    if (externalValue !== localValue) {
+      setLocalValue(externalValue);
+    }
+  }, [filters.filters[name]?.value]);
+
+  const debouncedChange = useDebouncedCallback((val: string) => {
+    filters.change({ name, label, value: val });
+    setPage(1);
+  }, 500);
+
+  return (
+    <TextInput
+      label={label}
+      placeholder={`Filter by ${label.toLowerCase()}...`}
+      value={localValue}
+      onChange={(e) => {
+        const val = e.currentTarget.value;
+        setLocalValue(val);
+        debouncedChange(val);
+      }}
+      p="xs"
+    />
+  );
+};
+
+const SingleDateFilter = ({ filters, setPage }: { filters: any; setPage: (p: number) => void }) => {
+  const dateValue = filters.filters.date?.value
+    ? new Date(filters.filters.date.value as string)
+    : null;
+
+  return (
+    <DateInput
+      p="xs"
+      label="Date"
+      placeholder="Specific date"
+      value={dateValue}
+      onChange={(date) => {
+        if (date) {
+          filters.change({
+            name: 'date',
+            label: 'Date',
+            value: date,
+          });
+        } else {
+          filters.remove('date');
+        }
+        setPage(1);
+      }}
+      valueFormat="YYYY-MM-DD"
+      clearable
+    />
+  );
+};
+
 export function SafetyObservationsTable() {
   const { user } = useAuth();
   const { page, limit, setLimit, setPage } = usePagination();
@@ -120,11 +192,23 @@ export function SafetyObservationsTable() {
 
   const [isExporting, setIsExporting] = useState(false);
 
+  // Format dates for API
+  const formatDate = (val: any) => {
+    if (!val) return undefined;
+    const d = new Date(val);
+    return !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : undefined;
+  };
+
   const { data, isLoading, refetch } = useGetSafetyObservationList({
     query: {
       page,
       limit,
       sort: sort.query,
+      status: filters.filters.status?.value as string | undefined,
+      start_date: formatDate(filters.filters.start_date?.value),
+      end_date: formatDate(filters.filters.end_date?.value),
+      date: formatDate(filters.filters.date?.value),
+      observer_name: filters.filters.observer_name?.value as string | undefined,
     },
   });
 
@@ -188,11 +272,17 @@ export function SafetyObservationsTable() {
           const date = new Date(observation_date);
           return `${date.toLocaleDateString()} ${observation_time || ''}`;
         },
+        filter: <SingleDateFilter filters={filters} setPage={setPage} />,
+        filtering: Boolean(filters.filters.date),
       },
       {
         accessor: 'observer_name',
         title: 'Observer',
         sortable: true,
+        filtering: Boolean(filters.filters.observer_name),
+        filter: (
+          <SafeTextInputFilter name="observer_name" label="Observer" filters={filters} setPage={setPage} />
+        ),
       },
       {
         accessor: 'location_area',
@@ -235,6 +325,34 @@ export function SafetyObservationsTable() {
         render: ({ status }) => (
           <Badge color={STATUS_COLORS[status]}>{STATUS_LABELS[status]}</Badge>
         ),
+        filtering: Boolean(filters.filters.status),
+        filter: (
+          <Select
+            label="Status"
+            description="Filter by status"
+            placeholder="Select status"
+            value={(filters.filters.status?.value as string) ?? null}
+            onChange={(value) => {
+              if (value) {
+                filters.change({
+                  name: 'status',
+                  label: 'Status',
+                  value,
+                });
+              } else {
+                filters.remove('status');
+              }
+              setPage(1);
+            }}
+            data={[
+              { value: 'open', label: 'Open' },
+              { value: 'in_progress', label: 'In Progress' },
+              { value: 'resolved', label: 'Resolved' },
+              { value: 'closed', label: 'Closed' },
+            ]}
+            clearable
+          />
+        ),
       },
       {
         accessor: 'actions',
@@ -276,6 +394,38 @@ export function SafetyObservationsTable() {
         title="Safety Observation Cards"
         actions={
           <Group gap="xs">
+            <DateInput
+              placeholder="From Date"
+              size="xs"
+              w={140}
+              clearable
+              value={filters.filters.start_date?.value ? new Date(filters.filters.start_date.value as any) : null}
+              onChange={(date) => {
+                if (date) {
+                  filters.change({ name: 'start_date', label: 'From', value: date });
+                } else {
+                  filters.remove('start_date');
+                }
+                setPage(1);
+              }}
+              valueFormat="YYYY-MM-DD"
+            />
+            <DateInput
+              placeholder="To Date"
+              size="xs"
+              w={140}
+              clearable
+              value={filters.filters.end_date?.value ? new Date(filters.filters.end_date.value as any) : null}
+              onChange={(date) => {
+                if (date) {
+                  filters.change({ name: 'end_date', label: 'To', value: date });
+                } else {
+                  filters.remove('end_date');
+                }
+                setPage(1);
+              }}
+              valueFormat="YYYY-MM-DD"
+            />
             <Button
               variant="subtle"
               size="xs"
@@ -310,7 +460,7 @@ export function SafetyObservationsTable() {
           recordsPerPage={limit}
           totalRecords={data?.meta?.total ?? 0}
           onRecordsPerPageChange={setLimit}
-          recordsPerPageOptions={[5, 15, 30]}
+          recordsPerPageOptions={[0, 15, 30, 100, 200]}
           sortStatus={sort.status}
           onSortStatusChange={sort.change}
           columns={columns}
