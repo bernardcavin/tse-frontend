@@ -18,6 +18,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   IconAlertCircle,
+  IconCameraRotate,
   IconCheck,
   IconFileDescription,
   IconMapPin,
@@ -41,6 +42,7 @@ export function EmployeeCheckIn() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [processingFace, setProcessingFace] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
 
   const {
     data: statusData,
@@ -97,6 +99,7 @@ export function EmployeeCheckIn() {
                   if (qrData.type === 'attendance') {
                     setScannedData(qrData);
                     setViewMode('FACE_CAPTURE');
+                    setFacingMode('user'); // Switch to front camera for face
                     notifications.show({
                       title: 'QR Detected',
                       message: 'Now capture your face to complete check-in.',
@@ -297,7 +300,7 @@ export function EmployeeCheckIn() {
                   <Button
                     fullWidth
                     color="orange"
-                    onClick={() => { setCapturedImage(null); setErrorMessage(null); setViewMode('FACE_CAPTURE'); }}
+                    onClick={() => { setCapturedImage(null); setErrorMessage(null); setFacingMode('user'); setViewMode('FACE_CAPTURE'); }}
                     disabled={!location}
                   >
                     Check Out (Face Verification)
@@ -310,7 +313,7 @@ export function EmployeeCheckIn() {
                   </Badge>
                   <Button
                     fullWidth
-                    onClick={() => { setScannedData(null); setCapturedImage(null); setErrorMessage(null); setViewMode('QR_SCAN'); }}
+                    onClick={() => { setScannedData(null); setCapturedImage(null); setErrorMessage(null); setFacingMode('environment'); setViewMode('QR_SCAN'); }}
                     disabled={!location}
                   >
                     Check In (QR + Face Verification)
@@ -329,11 +332,11 @@ export function EmployeeCheckIn() {
 
               <div style={{ position: 'relative' }}>
                 <Webcam
-                  key="qr-cam"
+                  key={`qr-cam-${facingMode}`}
                   audio={false}
                   ref={webcamRef}
                   screenshotFormat="image/jpeg"
-                  videoConstraints={{ facingMode: { ideal: 'environment' } }}
+                  videoConstraints={{ facingMode }}
                   style={{ width: '100%', maxWidth: 400, borderRadius: 8 }}
                 />
                 <div style={{
@@ -344,6 +347,16 @@ export function EmployeeCheckIn() {
                   borderRadius: 10,
                 }} />
               </div>
+
+              <Group justify="center">
+                <Button
+                  variant="light"
+                  leftSection={<IconCameraRotate size={18} />}
+                  onClick={() => setFacingMode(f => f === 'user' ? 'environment' : 'user')}
+                >
+                  Flip Camera
+                </Button>
+              </Group>
 
               <Button variant="default" onClick={resetFlow}>Cancel</Button>
             </Stack>
@@ -394,11 +407,11 @@ export function EmployeeCheckIn() {
               ) : (
                 <div style={{ position: 'relative' }}>
                   <Webcam
-                    key="face-cam"
+                    key={`face-cam-${facingMode}`}
                     audio={false}
                     ref={webcamRef}
                     screenshotFormat="image/jpeg"
-                    videoConstraints={{ facingMode: 'user' }}
+                    videoConstraints={{ facingMode }}
                     style={{ width: '100%', maxWidth: 400, borderRadius: 8 }}
                   />
                   <div style={{
@@ -413,6 +426,15 @@ export function EmployeeCheckIn() {
               )}
 
               <Group justify="center">
+                {!capturedImage && (
+                  <Button
+                    variant="light"
+                    leftSection={<IconCameraRotate size={18} />}
+                    onClick={() => setFacingMode(f => f === 'user' ? 'environment' : 'user')}
+                  >
+                    Flip Camera
+                  </Button>
+                )}
                 <Button variant="default" onClick={resetFlow} disabled={isBusy}>
                   Cancel
                 </Button>
