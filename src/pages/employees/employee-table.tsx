@@ -1,17 +1,18 @@
-import { useCallback, useMemo } from 'react';
-import { DataTableColumn } from 'mantine-datatable';
-import { useNavigate } from 'react-router-dom';
-import z from 'zod';
-import { Badge, Text } from '@mantine/core';
-import { modals } from '@mantine/modals';
 import { User } from '@/api/entities/auth';
 import { usePagination } from '@/api/helpers';
 import { AddButton } from '@/components/add-button';
 import { DataTable } from '@/components/data-table';
 import { useAuth } from '@/hooks';
-import { useDeleteEmployee, useGetEmployeeList } from '@/hooks/api/employees';
+import { useClearEmployeeFace, useDeleteEmployee, useGetEmployeeList } from '@/hooks/api/employees';
 import { paths } from '@/routes';
 import { icons } from '@/utilities/icons';
+import { ActionIcon, Badge, Group, Text, Tooltip } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { DataTableColumn } from 'mantine-datatable';
+import { useCallback, useMemo } from 'react';
+import { PiScanDuotone } from 'react-icons/pi';
+import { useNavigate } from 'react-router-dom';
+import z from 'zod';
 import { openEmployeeCreate, openEmployeeEdit } from './employee-modals';
 
 type EmployeeType = z.infer<typeof User>;
@@ -61,6 +62,23 @@ export function EmployeeTable() {
     [deleteEmployee, refetch]
   );
 
+  const { mutate: clearEmployeeFace } = useClearEmployeeFace();
+  const handleClearFace = useCallback(
+    (id: string) => {
+      modals.openConfirmModal({
+        title: 'Clear Face Enrollment',
+        children: 'Are you sure you want to clear this employee\'s face enrollment? They will need to re-enroll their face to check in.',
+        confirmProps: { color: 'red' },
+        labels: { confirm: 'Clear Face', cancel: 'Cancel' },
+        onConfirm: () => {
+          clearEmployeeFace(id);
+          refetch();
+        },
+      });
+    },
+    [clearEmployeeFace, refetch]
+  );
+
   const columns: DataTableColumn<EmployeeType>[] = useMemo(
     () => [
       {
@@ -84,55 +102,55 @@ export function EmployeeTable() {
         render: ({ email }) => email || <Text c="dimmed">-</Text>,
       },
       {
-        accessor: 'nik',
-        title: 'NIK',
-        render: ({ nik }) => nik || <Text c="dimmed">-</Text>,
-      },
-      {
-        accessor: 'position',
-        title: 'Position',
-        render: ({ position }) => position || <Text c="dimmed">-</Text>,
-      },
-      {
-        accessor: 'department',
-        title: 'Department',
-        render: ({ department }) => department || <Text c="dimmed">-</Text>,
-      },
-      {
-        accessor: 'phone_number',
-        title: 'Phone',
-        render: ({ phone_number }) => phone_number || <Text c="dimmed">-</Text>,
-      },
-      {
         accessor: 'role',
         title: 'Role',
         sortable: true,
         render: ({ role }) => <Badge color={role === 'MANAGER' ? 'blue' : 'gray'}>{role}</Badge>,
       },
       {
-        accessor: 'id',
-        title: 'User ID',
-        render: ({ id }) => <Text size="xs">{id.slice(0, 8)}...</Text>,
+        accessor: 'has_face_embedding',
+        title: 'Face Enrolled',
+        render: ({ has_face_embedding }) => (
+          <Badge color={has_face_embedding ? 'green' : 'gray'} variant="light">
+            {has_face_embedding ? 'Yes' : 'No'}
+          </Badge>
+        ),
       },
       {
         accessor: 'actions',
         title: 'Actions',
         textAlign: 'right',
-        width: 130,
+        width: 160,
         render: (row: any) => (
-          <DataTable.Actions
-            onView={() => navigate(paths.manager.employeeDetail(row.id))}
-            onEdit={canModifyEmployees ? () => openEmployeeEdit(row.id, refetch) : undefined}
-            onDelete={
-              canModifyEmployees && row.id !== currentUser?.id
-                ? () => handleDelete(row.id)
-                : undefined // HR/Finance cannot delete, and prevent deleting yourself
-            }
-          />
+          <Group gap="xs" justify="flex-end" wrap="nowrap">
+            <DataTable.Actions
+              onView={() => navigate(paths.manager.employeeDetail(row.id))}
+              onEdit={canModifyEmployees ? () => openEmployeeEdit(row.id, refetch) : undefined}
+              onDelete={
+                canModifyEmployees && row.id !== currentUser?.id
+                  ? () => handleDelete(row.id)
+                  : undefined
+              }
+            />
+            {canModifyEmployees && row.has_face_embedding && (
+              <Tooltip label="Clear Face">
+                        <ActionIcon
+                          variant="default"
+                          c="orange"
+                          onClick={(e) => {
+                  e.stopPropagation();
+                  handleClearFace(row.id);
+                }}
+                        >
+                          <PiScanDuotone size="1rem" />
+                        </ActionIcon>
+                      </Tooltip>
+            )}
+          </Group>
         ),
       },
     ],
-    [currentUser?.id, handleDelete, navigate]
+    [currentUser?.id, handleDelete, handleClearFace, navigate, canModifyEmployees, refetch]
   );
 
   const Icon = icons.users;

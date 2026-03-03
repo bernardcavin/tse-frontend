@@ -16,6 +16,7 @@ export const User = z.object({
   emergency_contact_phone: z.string().optional().nullable(),
   role: z.string(),
   attachment_file_ids: z.array(z.string().uuid()).optional().nullable(),
+  has_face_embedding: z.boolean().optional(),
 });
 
 export const CreateEmployee = z.object({

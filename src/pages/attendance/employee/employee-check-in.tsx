@@ -1,12 +1,7 @@
-import { useEffect, useState } from 'react';
-import {
-  IconAlertCircle,
-  IconCheck,
-  IconFileDescription,
-  IconMapPin,
-  IconQrcode,
-} from '@tabler/icons-react';
-import { Scanner } from '@yudiel/react-qr-scanner';
+import { useAuth } from '@/hooks';
+import { useCheckIn, useCheckOut, useGetAttendanceStatus } from '@/hooks/api/attendance';
+import { paths } from '@/routes';
+import { getFaceEmbedding } from '@/utils/faceEmbedding';
 import {
   Alert,
   Badge,
@@ -21,20 +16,31 @@ import {
   Title,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { useAuth } from '@/hooks';
-import { useCheckIn, useCheckOut, useGetAttendanceStatus } from '@/hooks/api/attendance';
-import { paths } from '@/routes';
-import { formatDateTimeReadable } from '@/utilities/date';
+import { notifications } from '@mantine/notifications';
+import {
+  IconAlertCircle,
+  IconCheck,
+  IconFileDescription,
+  IconMapPin
+} from '@tabler/icons-react';
+import { Scanner } from '@yudiel/react-qr-scanner';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
 import { LeaveRequestModal } from '../leave-management/leave-request-modal';
+
+type ViewMode = 'IDLE' | 'QR_SCAN' | 'FACE_CAPTURE';
 
 export function EmployeeCheckIn() {
   const { user } = useAuth();
+  const webcamRef = useRef<Webcam>(null);
   const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] =
     useDisclosure(false);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [scannerEnabled, setScannerEnabled] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('IDLE');
   const [scannedData, setScannedData] = useState<any>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [processingFace, setProcessingFace] = useState(false);
 
   const {
     data: statusData,
@@ -47,7 +53,7 @@ export function EmployeeCheckIn() {
   const activeCheckIn = statusData?.active_check_in;
   const isCheckedIn = statusData?.is_checked_in;
 
-  // Get user location
+  // Get user location on mount
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -57,7 +63,7 @@ export function EmployeeCheckIn() {
             longitude: position.coords.longitude,
           });
         },
-        (error) => {
+        () => {
           setLocationError('Unable to get your location. Please enable location services.');
         }
       );
@@ -73,55 +79,105 @@ export function EmployeeCheckIn() {
       const qrData = JSON.parse(result[0].rawValue);
 
       if (qrData.type !== 'attendance') {
-        alert('Invalid QR code. Please scan an attendance location QR code.');
+        notifications.show({ title: 'Error', message: 'Invalid QR code. Please scan an attendance location QR code.', color: 'red' });
         return;
       }
 
       setScannedData(qrData);
-      setScannerEnabled(false);
+      setViewMode('FACE_CAPTURE');
+      notifications.show({ title: 'QR Detected', message: 'Now capture your face to complete check-in.', color: 'blue' });
     } catch (error) {
-      alert('Invalid QR code format.');
+      notifications.show({ title: 'Error', message: 'Invalid QR code format.', color: 'red' });
     }
   };
 
-  const handleCheckIn = () => {
-    if (!scannedData || !location) return;
+  const handleCaptureFace = useCallback(() => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      setCapturedImage(imageSrc);
+    }
+  }, []);
 
-    checkIn(
-      {
-        variables: {
-          location_id: scannedData.location_id,
-          qr_code_data: JSON.stringify(scannedData),
-          latitude: location.latitude,
-          longitude: location.longitude,
+  const handleCheckIn = async () => {
+    if (!scannedData || !location || !capturedImage) return;
+
+    setProcessingFace(true);
+    try {
+      const embedding = await getFaceEmbedding(capturedImage);
+      checkIn(
+        {
+          variables: {
+            location_id: scannedData.location_id,
+            qr_code_data: JSON.stringify(scannedData),
+            latitude: location.latitude,
+            longitude: location.longitude,
+            face_embedding: embedding,
+          },
         },
-      },
-      {
-        onSuccess: () => {
-          setScannedData(null);
-          refetchStatus();
-        },
-      }
-    );
+        {
+          onSuccess: () => {
+            setScannedData(null);
+            setCapturedImage(null);
+            setViewMode('IDLE');
+            refetchStatus();
+          },
+          onError: (error: any) => {
+            notifications.show({
+              title: 'Check-In Failed',
+              message: error?.response?.data?.detail || 'Face verification failed. Please try again.',
+              color: 'red',
+            });
+          },
+        }
+      );
+    } catch (e) {
+      notifications.show({ title: 'Error', message: 'Failed to process face image.', color: 'red' });
+    } finally {
+      setProcessingFace(false);
+    }
   };
 
-  const handleCheckOut = () => {
-    if (!activeCheckIn || !location) return;
+  const handleCheckOut = async () => {
+    if (!activeCheckIn || !location || !capturedImage) return;
 
-    checkOut(
-      {
-        variables: {
-          attendance_record_id: activeCheckIn.id!,
-          latitude: location.latitude,
-          longitude: location.longitude,
+    setProcessingFace(true);
+    try {
+      const embedding = await getFaceEmbedding(capturedImage);
+      checkOut(
+        {
+          variables: {
+            attendance_record_id: activeCheckIn.id!,
+            latitude: location.latitude,
+            longitude: location.longitude,
+            face_embedding: embedding,
+          },
         },
-      },
-      {
-        onSuccess: () => {
-          refetchStatus();
-        },
-      }
-    );
+        {
+          onSuccess: () => {
+            setCapturedImage(null);
+            setViewMode('IDLE');
+            refetchStatus();
+          },
+          onError: (error: any) => {
+            notifications.show({
+              title: 'Check-Out Failed',
+              message: error?.response?.data?.detail || 'Face verification failed. Please try again.',
+              color: 'red',
+            });
+          },
+        }
+      );
+    } catch (e) {
+      notifications.show({ title: 'Error', message: 'Failed to process face image.', color: 'red' });
+    } finally {
+      setProcessingFace(false);
+    }
+  };
+
+  const resetFlow = () => {
+    setViewMode('IDLE');
+    setScannedData(null);
+    setCapturedImage(null);
   };
 
   if (statusLoading) {
@@ -129,6 +185,16 @@ export function EmployeeCheckIn() {
       <Center h={400}>
         <Loader size="lg" />
       </Center>
+    );
+  }
+
+  if (!user?.has_face_embedding) {
+    return (
+      <Stack gap="lg">
+        <Alert icon={<IconAlertCircle size={16} />} color="orange" title="Face Enrollment Required">
+          You must enroll your face from your profile settings before you can check in or check out.
+        </Alert>
+      </Stack>
     );
   }
 
@@ -158,27 +224,6 @@ export function EmployeeCheckIn() {
               </Text>
             </Group>
           )}
-          <Button
-            variant="light"
-            size="xs"
-            onClick={() => {
-              setLocation(null);
-              setLocationError(null);
-              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                  setLocation({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                  });
-                },
-                (error) => {
-                  setLocationError('Unable to get your location. Please enable location services.');
-                }
-              );
-            }}
-          >
-            Refresh Location
-          </Button>
         </Stack>
       </Card>
 
@@ -196,41 +241,145 @@ export function EmployeeCheckIn() {
         </Button>
       </Group>
 
-      {/* Attendance Status */}
+      {/* Attendance Status & Actions */}
       <Card shadow="sm" padding="lg">
         <Stack gap="md">
           <Group>
             <IconCheck size={24} />
             <Title order={3}>Attendance Status</Title>
           </Group>
-          {isCheckedIn && activeCheckIn ? (
+
+          {viewMode === 'IDLE' && (
             <>
-              <Alert icon={<IconCheck size={16} />} color="green">
-                You are currently checked in
-              </Alert>
-              <Stack gap="xs">
-                <Text size="sm">
-                  <strong>Check-in Time:</strong>{' '}
-                  {formatDateTimeReadable(activeCheckIn.check_in_time)}
-                </Text>
-                <Text size="sm">
-                  <strong>Location ID:</strong> {activeCheckIn.location_id}
-                </Text>
-              </Stack>
-              <Button
-                fullWidth
-                color="red"
-                onClick={handleCheckOut}
-                loading={checkingOut}
-                disabled={!location}
-              >
-                Check Out
-              </Button>
+              {isCheckedIn && activeCheckIn ? (
+                <>
+                  <Alert icon={<IconCheck size={16} />} color="green">
+                    You are currently checked in
+                  </Alert>
+                  <Stack gap="xs">
+                    <Text size="sm">
+                      <strong>Check-in Time:</strong>{' '}
+                      {new Date(activeCheckIn.check_in_time).toLocaleString()}
+                    </Text>
+                    <Text size="sm">
+                      <strong>Location ID:</strong> {activeCheckIn.location_id}
+                    </Text>
+                  </Stack>
+                  <Button
+                    fullWidth
+                    color="orange"
+                    onClick={() => { setCapturedImage(null); setViewMode('FACE_CAPTURE'); }}
+                    disabled={!location}
+                  >
+                    Check Out (Face Verification)
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Badge color="gray" variant="light" size="lg">
+                    Not Checked In
+                  </Badge>
+                  <Button
+                    fullWidth
+                    onClick={() => { setScannedData(null); setCapturedImage(null); setViewMode('QR_SCAN'); }}
+                    disabled={!location}
+                  >
+                    Check In (QR + Face Verification)
+                  </Button>
+                </>
+              )}
             </>
-          ) : (
-            <Badge color="gray" variant="light" size="lg">
-              Not Checked In
-            </Badge>
+          )}
+
+          {/* QR Scanner Step */}
+          {viewMode === 'QR_SCAN' && (
+            <Stack gap="md" align="center">
+              <Alert title="Step 1: Scan Location QR Code" color="blue" w="100%">
+                Hold the attendance location QR code up to the camera.
+              </Alert>
+              <Box style={{ borderRadius: 8, overflow: 'hidden', width: '100%', maxWidth: 400 }}>
+                <Scanner
+                  onScan={handleScan}
+                  styles={{ container: { width: '100%' } }}
+                />
+              </Box>
+              <Button variant="default" onClick={resetFlow}>Cancel</Button>
+            </Stack>
+          )}
+
+          {/* Face Capture Step */}
+          {viewMode === 'FACE_CAPTURE' && (
+            <Stack gap="md" align="center">
+              <Alert
+                title={!isCheckedIn ? 'Step 2: Face Verification' : 'Check Out: Face Verification'}
+                color="blue"
+                w="100%"
+              >
+                {capturedImage
+                  ? 'Review your face capture and submit.'
+                  : 'Position your face clearly in the frame and capture.'}
+              </Alert>
+
+              {capturedImage ? (
+                <img
+                  src={capturedImage}
+                  alt="Captured face"
+                  style={{ width: '100%', maxWidth: 400, borderRadius: 8 }}
+                />
+              ) : (
+                <div style={{ position: 'relative' }}>
+                  <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    videoConstraints={{ facingMode: 'user' }}
+                    style={{ width: '100%', maxWidth: 400, borderRadius: 8 }}
+                  />
+                  {/* Face guide overlay */}
+                  <div style={{
+                    position: 'absolute', top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 180, height: 240,
+                    border: '2px dashed rgba(255,255,255,0.8)',
+                    borderRadius: '50%',
+                    pointerEvents: 'none',
+                  }} />
+                </div>
+              )}
+
+              <Group justify="center">
+                <Button variant="default" onClick={resetFlow} disabled={checkingIn || checkingOut || processingFace}>
+                  Cancel
+                </Button>
+                {!capturedImage && (
+                  <Button onClick={handleCaptureFace}>Capture Face</Button>
+                )}
+                {capturedImage && (
+                  <>
+                    <Button variant="default" onClick={() => setCapturedImage(null)} disabled={checkingIn || checkingOut || processingFace}>
+                      Retake
+                    </Button>
+                    {!isCheckedIn ? (
+                      <Button
+                        onClick={handleCheckIn}
+                        loading={checkingIn || processingFace}
+                        color="green"
+                      >
+                        Submit Check-In
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleCheckOut}
+                        loading={checkingOut || processingFace}
+                        color="orange"
+                      >
+                        Submit Check-Out
+                      </Button>
+                    )}
+                  </>
+                )}
+              </Group>
+            </Stack>
           )}
         </Stack>
       </Card>
@@ -253,61 +402,10 @@ export function EmployeeCheckIn() {
 
       <LeaveRequestModal opened={createModalOpened} onClose={closeCreateModal} />
 
-      {/* QR Scanner */}
-      {!isCheckedIn && (
-        <Card shadow="sm" padding="lg">
-          <Stack gap="md">
-            <Group>
-              <IconQrcode size={24} />
-              <Title order={3}>Scan QR Code to Check In</Title>
-            </Group>
-
-            {!scannerEnabled && !scannedData && (
-              <Button fullWidth onClick={() => setScannerEnabled(true)} disabled={!location}>
-                Open QR Scanner
-              </Button>
-            )}
-
-            {scannerEnabled && (
-              <Box style={{ borderRadius: 8, overflow: 'hidden' }}>
-                <Scanner
-                  onScan={handleScan}
-                  styles={{
-                    container: { width: '100%' },
-                  }}
-                />
-                <Button fullWidth color="gray" mt="md" onClick={() => setScannerEnabled(false)}>
-                  Cancel Scan
-                </Button>
-              </Box>
-            )}
-
-            {scannedData && !scannerEnabled && (
-              <>
-                <Alert icon={<IconCheck size={16} />} color="blue">
-                  QR Code scanned successfully!
-                </Alert>
-                <Text size="sm">
-                  <strong>Location ID:</strong> {scannedData.location_id}
-                </Text>
-                <Group grow>
-                  <Button onClick={handleCheckIn} loading={checkingIn} disabled={!location}>
-                    Confirm Check In
-                  </Button>
-                  <Button color="gray" onClick={() => setScannedData(null)}>
-                    Cancel
-                  </Button>
-                </Group>
-              </>
-            )}
-
-            {!location && (
-              <Alert icon={<IconAlertCircle size={16} />} color="orange">
-                Location required. Please enable location services.
-              </Alert>
-            )}
-          </Stack>
-        </Card>
+      {!location && (
+        <Alert icon={<IconAlertCircle size={16} />} color="orange">
+          Location required. Please enable location services.
+        </Alert>
       )}
     </Stack>
   );

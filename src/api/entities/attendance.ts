@@ -41,6 +41,7 @@ export const CheckInRequest = z.object({
   qr_code_data: z.string(),
   latitude: z.number(),
   longitude: z.number(),
+  face_embedding: z.array(z.number()),
 });
 
 export const CheckOutRequest = z.object({
@@ -48,6 +49,7 @@ export const CheckOutRequest = z.object({
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
   notes: z.string().optional().nullable(),
+  face_embedding: z.array(z.number()),
 });
 
 export const AttendanceStatus_Response = z.object({

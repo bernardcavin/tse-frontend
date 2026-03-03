@@ -13,6 +13,7 @@ interface AuthContextValues {
   isPendingLogout: boolean;
   logout: () => void;
   user: z.infer<typeof User> | null;
+  refreshUserInfo: () => void;
 }
 
 export const AuthContext = createContext<AuthContextValues | null>(null);
@@ -88,8 +89,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login,
       setIsAuthenticated,
       user,
+      refreshUserInfo,
     }),
-    [isAuthenticated, isInitialized, isPendingLogin, isPendingLogout, logout, login, user]
+    [isAuthenticated, isInitialized, isPendingLogin, isPendingLogout, logout, login, user, refreshUserInfo]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,8 +1,8 @@
 import {
-  SafetyObservationClose,
-  SafetyObservationCreate,
-  SafetyObservationResolve,
-  SafetyObservationUpdate,
+    SafetyObservationClose,
+    SafetyObservationCreate,
+    SafetyObservationResolve,
+    SafetyObservationUpdate,
 } from '@/api/entities/safety-observations';
 import { getFacilityOptions } from '@/api/resources/facilities';
 import { FormSection } from '@/components/form-section';
@@ -10,25 +10,25 @@ import { ImageUpload } from '@/components/forms/file-upload';
 import { FileIdProvider, useFileIdManager } from '@/components/forms/file-upload-provider';
 import { FormProvider } from '@/components/forms/form-provider';
 import {
-  useCloseSafetyObservation,
-  useCreateSafetyObservation,
-  useEditSafetyObservation,
-  useGetSafetyObservation,
-  useResolveSafetyObservation,
+    useCloseSafetyObservation,
+    useCreateSafetyObservation,
+    useEditSafetyObservation,
+    useGetSafetyObservation,
+    useResolveSafetyObservation,
 } from '@/hooks/api/safety-observations';
 import { normalizeDate } from '@/utilities/date';
 import { handleFormErrors } from '@/utilities/form';
 import {
-  Button,
-  Checkbox,
-  Grid,
-  Group,
-  Loader,
-  Select,
-  Stack,
-  Text,
-  Textarea,
-  TextInput,
+    Button,
+    Checkbox,
+    Grid,
+    Group,
+    Loader,
+    Select,
+    Stack,
+    Text,
+    Textarea,
+    TextInput,
 } from '@mantine/core';
 import { DatePickerInput, TimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
@@ -394,8 +394,12 @@ export function ResolveSafetyObservationForm({ onSubmit, id }: ResolveSafetyObse
     validate: zodResolver(SafetyObservationResolve),
     initialValues: {
       resolution_notes: '',
+      resolution_photo_file_ids: [],
     },
   });
+
+  const fileIdManager = useFileIdManager();
+  const { updateFilesMetadata } = fileIdManager;
 
   const handleSubmit = form.onSubmit((values: any) => {
     resolveObservation(
@@ -404,6 +408,7 @@ export function ResolveSafetyObservationForm({ onSubmit, id }: ResolveSafetyObse
         onError: (error) => handleFormErrors(form, error),
         onSuccess: () => {
           onSubmit();
+          updateFilesMetadata();
         },
       }
     );
@@ -415,42 +420,53 @@ export function ResolveSafetyObservationForm({ onSubmit, id }: ResolveSafetyObse
 
   return (
     <FormProvider form={form} onSubmit={handleSubmit}>
-      <Stack>
-        <FormSection title="Observation Details">
-          <Text size="sm">
-            <strong>Description:</strong> {observation?.observation_description}
-          </Text>
-          <Text size="sm">
-            <strong>Date:</strong>{' '}
-            {observation?.observation_date
-              ? new Date(observation.observation_date).toLocaleDateString()
-              : '-'}
-          </Text>
-        </FormSection>
+      <FileIdProvider fileIdManager={fileIdManager}>
+        <Stack>
+          <FormSection title="Observation Details">
+            <Text size="sm">
+              <strong>Description:</strong> {observation?.observation_description}
+            </Text>
+            <Text size="sm">
+              <strong>Date:</strong>{' '}
+              {observation?.observation_date
+                ? new Date(observation.observation_date).toLocaleDateString()
+                : '-'}
+            </Text>
+          </FormSection>
 
-        <FormSection title="Resolution Notes (HSE)">
-          <Textarea
-            name="resolution_notes"
-            label="Resolution Notes"
-            placeholder="Describe how this observation was resolved..."
-            {...form.getInputProps('resolution_notes')}
-            minRows={4}
-            required
-            description="Provide detailed information about the resolution actions taken"
-          />
-        </FormSection>
+          <FormSection title="Resolution Notes (HSE)">
+            <Textarea
+              name="resolution_notes"
+              label="Resolution Notes"
+              placeholder="Describe how this observation was resolved..."
+              {...form.getInputProps('resolution_notes')}
+              minRows={4}
+              required
+              description="Provide detailed information about the resolution actions taken"
+            />
+          </FormSection>
 
-        <Group justify="flex-end">
-          <Button
-            type="submit"
-            loading={isPending}
-            color="green"
-            leftSection={<IconCheck size={16} stroke={2} />}
-          >
-            Mark as Resolved
-          </Button>
-        </Group>
-      </Stack>
+          <FormSection title="Resolution Photos (Optional)">
+            <ImageUpload
+              name="resolution_photo_file_ids"
+              title="Photos"
+              multiple
+              description="Upload photos of the resolution"
+            />
+          </FormSection>
+
+          <Group justify="flex-end">
+            <Button
+              type="submit"
+              loading={isPending}
+              color="green"
+              leftSection={<IconCheck size={16} stroke={2} />}
+            >
+              Mark as Resolved
+            </Button>
+          </Group>
+        </Stack>
+      </FileIdProvider>
     </FormProvider>
   );
 }

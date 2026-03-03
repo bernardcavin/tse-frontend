@@ -82,6 +82,7 @@ export const SafetyObservation = z.object({
   resolved_by_name: z.string().optional().nullable(),
   resolved_at: z.coerce.date().optional().nullable(),
   resolution_notes: z.string().optional().nullable(),
+  resolution_photo_file_ids: z.array(z.string().uuid()).optional().nullable(),
 
   // Close Information
   closed_by_id: z.string().uuid().optional().nullable(),
@@ -157,6 +158,7 @@ export const SafetyObservationUpdate = z.object({
 // Resolve schema
 export const SafetyObservationResolve = z.object({
   resolution_notes: z.string().min(10),
+  resolution_photo_file_ids: z.array(z.string().uuid()).optional().nullable(),
 });
 
 // Close schema

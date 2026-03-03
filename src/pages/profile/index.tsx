@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/page-header';
 import { useAuth } from '@/hooks';
 import { paths } from '@/routes/paths';
 import { Badge, Card, Grid, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { FaceEnrollmentOption } from './face-enrollment';
 import { ProfileForm } from './profile-form';
 
 export default function ProfilePage() {
@@ -71,6 +72,11 @@ export default function ProfilePage() {
             </Grid.Col>
           </Grid>
         </Paper>
+
+        {/* Face Enrollment */}
+        <Card withBorder>
+          <FaceEnrollmentOption />
+        </Card>
 
         {/* Editable Profile Form */}
         <Card withBorder>

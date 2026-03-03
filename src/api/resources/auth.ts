@@ -54,3 +54,19 @@ export async function getUserOptions() {
   return data as Array<{ label: string; value: string }>;
 }
 
+// Face Recognition API
+export async function enrollFace(embedding: number[]) {
+  const response = await client.post('auth/enroll-face', { face_embedding: embedding });
+  return BackendResponse.parse(response.data);
+}
+
+export async function clearOwnFace() {
+  const response = await client.delete('auth/enroll-face');
+  return BackendResponse.parse(response.data);
+}
+
+export async function clearEmployeeFace(id: string) {
+  const response = await client.delete(`auth/employees/${id}/face`);
+  return BackendResponse.parse(response.data);
+}
+

@@ -1,13 +1,13 @@
-import { Badge, Divider, Grid, Group, Loader, Stack, Text } from '@mantine/core';
-import { modals } from '@mantine/modals';
 import { FormSection } from '@/components/form-section';
 import { CarouselImageAttachment } from '@/components/image-attachment';
 import { useGetSafetyObservation } from '@/hooks/api/safety-observations';
+import { Badge, Divider, Grid, Group, Loader, Stack, Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import {
-  CloseSafetyObservationForm,
-  CreateSafetyObservationForm,
-  EditSafetyObservationForm,
-  ResolveSafetyObservationForm,
+    CloseSafetyObservationForm,
+    CreateSafetyObservationForm,
+    EditSafetyObservationForm,
+    ResolveSafetyObservationForm,
 } from './safety-observations-forms';
 
 interface ViewSafetyObservationProps {
@@ -186,6 +186,12 @@ export function ViewSafetyObservation({ id }: ViewSafetyObservationProps) {
             <Grid.Col span={12}>
               <Field label="Resolution Notes" value={observation.resolution_notes} />
             </Grid.Col>
+            {observation.resolution_photo_file_ids && observation.resolution_photo_file_ids.length > 0 && (
+              <Grid.Col span={12}>
+                <Text c="dimmed" fz="sm" mb={4}>Resolution Photos</Text>
+                <CarouselImageAttachment file_ids={observation.resolution_photo_file_ids} alt="Resolution Evidence" />
+              </Grid.Col>
+            )}
           </Grid>
         </FormSection>
       )}
